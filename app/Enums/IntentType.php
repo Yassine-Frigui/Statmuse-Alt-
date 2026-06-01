@@ -11,6 +11,7 @@ enum IntentType: string
     case HistoricalEvent = 'historical_event';
     case ComparisonQuery = 'comparison_query';
     case SeasonStats = 'season_stats';
+    case SingleGameScoring = 'single_game_scoring';
     case HeadToHead = 'head_to_head';
     case AwardQuery = 'award_query';
     case RuleExplanation = 'rule_explanation';

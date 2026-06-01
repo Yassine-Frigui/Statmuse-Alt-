@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Log;
+
 class QueryTransformationService
 {
     public function __construct(
@@ -10,11 +12,50 @@ class QueryTransformationService
 
     public function transform(array $analysis): array
     {
-        $systemPrompt = $this->buildSystemPrompt();
-        $response = $this->gemini->transform($systemPrompt, $analysis);
+        if (($analysis['intent'] ?? null) === 'single_game_scoring') {
+            return [
+                'intent_type' => 'single_game_scoring',
+                'primary_table' => 'game_player_stats',
+                'select' => [
+                    'game_player_stats.*',
+                    'games.date as game_date',
+                    'games.stage as game_stage',
+                    'seasons.year as season_year',
+                    'seasons.label as season_label',
+                    'players.first_name',
+                    'players.last_name',
+                    'players.position',
+                    'teams.name as team_name',
+                    'teams.abbreviation as team_abbreviation',
+                ],
+                'filters' => [],
+                'order_by' => ['column' => 'points', 'direction' => 'desc'],
+                'limit' => $analysis['constraints']['limit'] ?? 10,
+                'group_by' => null,
+            ];
+        }
 
-        $text = $response['candidates'][0]['content']['parts'][0]['text'] ?? '{}';
+        $systemPrompt = $this->buildSystemPrompt();
+        try {
+            $response = $this->gemini->transform($systemPrompt, $analysis);
+        } catch (\Throwable $e) {
+            Log::warning('QueryTransformationService: Gemini transform failed', ['error' => $e->getMessage()]);
+            return $this->defaultQuery();
+        }
+
+        $text = $response['candidates'][0]['content']['parts'][0]['text'] ?? null;
+
+        if (is_null($text)) {
+            Log::warning('QueryTransformationService: Gemini returned no text', ['response' => $response]);
+            return $this->defaultQuery();
+        }
+
         $structured = json_decode($text, true);
+
+        if (!is_array($structured)) {
+            Log::warning('QueryTransformationService: JSON decode failed', ['text' => $text]);
+            return $this->defaultQuery();
+        }
 
         return $this->validate($structured) ? $structured : $this->defaultQuery();
     }

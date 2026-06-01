@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class ResponseFormatterService
 {
@@ -17,12 +18,35 @@ class ResponseFormatterService
         }
 
         $systemPrompt = $this->buildSystemPrompt();
-        $response = $this->gemini->format($systemPrompt, [
-            'structured_query' => $structuredQuery,
-            'data' => $data->toArray(),
-        ], $originalQuestion);
+        try {
+            $response = $this->gemini->format($systemPrompt, [
+                'structured_query' => $structuredQuery,
+                'data' => $data->toArray(),
+            ], $originalQuestion);
 
-        return $response;
+            // Defensive: ensure response is a string
+            if (!is_string($response) || trim($response) === '') {
+                throw new \RuntimeException('Empty formatter response');
+            }
+
+            return $response;
+        } catch (\Throwable $e) {
+            Log::warning('ResponseFormatterService: Gemini format failed, falling back to local formatter', [
+                'error' => $e->getMessage(),
+                'structured_query' => $structuredQuery,
+            ]);
+
+            // Create a simple table fallback. Use first row keys as columns.
+            $rows = $data->map(fn($r) => (array) $r)->toArray();
+            $columns = [];
+            if (!empty($rows)) {
+                $columns = array_keys($rows[0]);
+            }
+
+            $title = $structuredQuery['intent_type'] ?? 'Results';
+
+            return $this->formatSimple($title, $rows, $columns);
+        }
     }
 
     public function formatSimple(string $title, array $rows, array $columns): string

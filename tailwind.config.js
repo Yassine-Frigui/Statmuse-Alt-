@@ -12,7 +12,14 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Inter', ...defaultTheme.fontFamily.sans],
+                display: ['Barlow Condensed', 'sans-serif'],
+            },
+            colors: {
+                'court-black': '#0A0A0C',
+                'court-dark': '#121217',
+                'hoop-orange': '#FF5D22',
+                'data-slate': '#94A3B8',
             },
         },
     },

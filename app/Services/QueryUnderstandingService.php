@@ -12,6 +12,11 @@ class QueryUnderstandingService
 
     public function analyze(string $question): array
     {
+        $local = $this->classifyLocally($question);
+        if ($local !== null) {
+            return $local;
+        }
+
         $systemPrompt = $this->buildSystemPrompt();
         $response = $this->gemini->analyze($systemPrompt, $question);
 
@@ -56,5 +61,158 @@ PROMPT;
     private function isValidIntent(string $intent): bool
     {
         return collect(IntentType::cases())->contains(fn(IntentType $case) => $case->value === $intent);
+    }
+
+    private function classifyLocally(string $question): ?array
+    {
+        $normalized = $this->normalizeQuestion($question);
+
+        if ($this->matchesAny($normalized, ['most points scored in a game', 'single game', 'highest scoring game', 'most points', 'game'])) {
+          return $this->buildIntentPayload(
+            IntentType::SingleGameScoring,
+            $question,
+            $this->extractMetric($normalized) ?? 'points',
+            'single_game',
+            $this->extractLimit($normalized) ?? 10,
+            'NBA'
+          );
+        }
+
+        if ($this->matchesAny($normalized, ['top', 'scorer', 'ranking', 'leaders', 'all time'])) {
+            return $this->buildIntentPayload(IntentType::RankingQuery, $question, $this->extractMetric($normalized) ?? 'points', 'all_time', $this->extractLimit($normalized) ?? 10, 'NBA');
+        }
+
+        if ($this->matchesAny($normalized, ['won the championship', 'nba championship', 'who won in'])) {
+            return $this->buildIntentPayload(IntentType::ChampionshipQuery, $question, 'points', 'season', 1, 'NBA');
+        }
+
+        if ($this->matchesAny($normalized, ['head to head', 'h2h'])) {
+            return $this->buildIntentPayload(IntentType::HeadToHead, $question, null, null, 10, 'NBA');
+        }
+
+        if ($this->matchesAny($normalized, ['team history', 'history of', 'team info', 'tell me about'])) {
+          return $this->buildEntityIntent(IntentType::TeamInfo, $question);
+        }
+
+        if ($this->matchesAny($normalized, ['who is', 'player bio', 'player info'])) {
+          return $this->buildEntityIntent(IntentType::PlayerInfo, $question);
+        }
+
+        if ($this->matchesAny($normalized, ['compare', 'vs', 'versus'])) {
+          return $this->buildIntentPayload(IntentType::ComparisonQuery, $question, null, null, 2, 'NBA');
+        }
+
+        if ($this->matchesAny($normalized, ['mvp', 'rookie of the year', 'defensive player of the year', 'award winners', 'awards'])) {
+            return $this->buildIntentPayload(IntentType::AwardQuery, $question, null, null, 10, 'NBA');
+        }
+
+        if ($this->matchesAny($normalized, ['rule', 'rules', 'explain the aba nba merger', 'merger', 'historical'])) {
+            return $this->buildIntentPayload(IntentType::HistoricalEvent, $question, null, null, 10, 'NBA');
+        }
+
+        if ($this->matchesAny($normalized, ['season stats', 'stats in', '2024', '2023', '2022'])) {
+            return $this->buildIntentPayload(IntentType::SeasonStats, $question, $this->extractMetric($normalized) ?? 'points', 'season', $this->extractLimit($normalized) ?? 10, 'NBA');
+        }
+
+        if ($this->matchesAny($normalized, ['rule explanation', 'how does', 'what is the rule'])) {
+            return $this->buildIntentPayload(IntentType::RuleExplanation, $question, null, null, 10, 'NBA');
+        }
+
+        return null;
+    }
+
+    private function extractSeasonYear(string $question): ?int
+    {
+      if (preg_match_all('/\d{4}/', $question, $matches) && !empty($matches[0])) {
+        $year = (int) $matches[0][0];
+
+        return ($year >= 1900 && $year <= 2100) ? $year : null;
+      }
+
+      return null;
+    }
+
+    private function extractLimit(string $question): ?int
+    {
+      if (preg_match('/\btop\s+(\d+)\b/i', $question, $matches)) {
+        return (int) $matches[1];
+      }
+
+      return null;
+    }
+
+    private function normalizeQuestion(string $question): string
+    {
+      return strtolower(trim(str_replace(['-', '_', '?', '.', ','], ' ', $question)));
+    }
+
+    private function matchesAny(string $normalizedQuestion, array $needles): bool
+    {
+      foreach ($needles as $needle) {
+        if ($needle !== '' && str_contains($normalizedQuestion, $needle)) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    private function extractMetric(string $normalizedQuestion): ?string
+    {
+      return match (true) {
+        str_contains($normalizedQuestion, 'rebounds') => 'rebounds',
+        str_contains($normalizedQuestion, 'assists') => 'assists',
+        str_contains($normalizedQuestion, 'steals') => 'steals',
+        str_contains($normalizedQuestion, 'blocks') => 'blocks',
+        default => null,
+      };
+    }
+
+    private function buildIntentPayload(IntentType $intent, string $question, ?string $metric, ?string $period, int $limit, string $competition): array
+    {
+      return [
+        'intent' => $intent->value,
+        'entities' => [
+          'player_name' => null,
+          'team_name' => null,
+          'season_year' => $this->extractSeasonYear($question),
+          'competition' => $competition,
+        ],
+        'constraints' => [
+          'metric' => $metric,
+          'limit' => $limit,
+          'sort' => 'desc',
+          'period' => $period,
+        ],
+      ];
+    }
+
+    private function buildEntityIntent(IntentType $intent, string $question): array
+    {
+      return [
+        'intent' => $intent->value,
+        'entities' => [
+          'player_name' => $this->extractEntityName($question),
+          'team_name' => $this->extractEntityName($question),
+          'season_year' => $this->extractSeasonYear($question),
+          'competition' => 'NBA',
+        ],
+        'constraints' => [
+          'metric' => null,
+          'limit' => 10,
+          'sort' => 'desc',
+          'period' => null,
+        ],
+      ];
+    }
+
+    private function extractEntityName(string $question): ?string
+    {
+      $words = preg_split('/\s+/', trim($question));
+      if (!$words || count($words) < 2) {
+        return null;
+      }
+
+      return implode(' ', array_slice($words, -2));
     }
 }

@@ -10,8 +10,7 @@ class GeminiService
 {
     private string $apiKey;
 
-    private string $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
-
+    private string $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
     public function __construct()
     {
         $this->apiKey = config('services.gemini.api_key');

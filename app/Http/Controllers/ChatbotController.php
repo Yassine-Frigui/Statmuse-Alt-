@@ -6,7 +6,6 @@ use App\Enums\IntentType;
 use App\Http\Requests\ChatbotRequest;
 use App\Models\Conversation;
 use App\Services\CorpusRetrievalService;
-use App\Services\GeminiService;
 use App\Services\QueryTransformationService;
 use App\Services\QueryUnderstandingService;
 use App\Services\ResponseFormatterService;
@@ -23,11 +22,7 @@ class ChatbotController extends Controller
 
     public function index()
     {
-        $conversations = auth()->user()
-            ? auth()->user()->conversations()->orderByDesc('created_at')->get()
-            : collect();
-
-        return view('chatbot.index', compact('conversations'));
+        return view('chatbot.index');
     }
 
     public function ask(ChatbotRequest $request): JsonResponse
@@ -36,6 +31,45 @@ class ChatbotController extends Controller
 
         try {
             $analysis = $this->understandingService->analyze($question);
+
+            if (($analysis['intent'] ?? null) === IntentType::SingleGameScoring->value) {
+                $seasonYear = $analysis['entities']['season_year'] ?? $this->retrievalService->latestSeasonYear();
+                $limit = $analysis['constraints']['limit'] ?? 10;
+                $metric = $analysis['constraints']['metric'] ?? 'points';
+
+                $data = $this->retrievalService->getSingleGameScoringLeaders($seasonYear, $limit, $metric);
+                $reply = $this->formatterService->formatSimple(
+                    $this->formatSingleGameTitle($metric) . ($seasonYear ? ' ' . $this->formatSeasonLabel((int) $seasonYear) : ''),
+                    $data->toArray(),
+                    ['first_name', 'last_name', 'team_abbreviation', 'game_date', 'points', 'rebounds', 'assists']
+                );
+
+                $conversation = null;
+                if (auth()->check()) {
+                    $conversation = Conversation::create([
+                        'user_id' => auth()->id(),
+                        'messages' => [
+                            ['role' => 'user', 'content' => $question, 'structured_query' => [
+                                'intent_type' => IntentType::SingleGameScoring->value,
+                                'primary_table' => 'game_player_stats',
+                                'filters' => $seasonYear ? [['column' => 'season_year', 'operator' => '=', 'value' => $seasonYear]] : [],
+                                'limit' => $limit,
+                                'metric' => $metric,
+                            ]],
+                            ['role' => 'assistant', 'content' => $reply, 'retrieved_data' => $data->toArray()],
+                        ],
+                    ]);
+                }
+
+                return response()->json([
+                    'reply' => $reply,
+                    'data' => $data->toArray(),
+                    'conversation_id' => $conversation?->id,
+                    'intent' => IntentType::SingleGameScoring->value,
+                    'entities' => array_values(array_filter([$seasonYear ? $this->formatSeasonLabel((int) $seasonYear) : null, $limit, $metric])),
+                ]);
+            }
+
             $structuredQuery = $this->transformationService->transform($analysis);
             $data = $this->retrievalService->retrieve($structuredQuery);
             $reply = $this->formatterService->format($structuredQuery, $data, $question);
@@ -51,10 +85,19 @@ class ChatbotController extends Controller
                 ]);
             }
 
+            $entities = array_values(array_filter([
+                $analysis['entities']['player_name'] ?? null,
+                $analysis['entities']['team_name'] ?? null,
+                $analysis['entities']['competition'] ?? null,
+                $analysis['entities']['season_year'] ?? null,
+            ]));
+
             return response()->json([
                 'reply' => $reply,
                 'data' => $data->toArray(),
                 'conversation_id' => $conversation?->id,
+                'intent' => $analysis['intent'] ?? null,
+                'entities' => $entities,
             ]);
         } catch (\Exception $e) {
             report($e);
@@ -69,5 +112,22 @@ class ChatbotController extends Controller
     public function history(Conversation $conversation): JsonResponse
     {
         return response()->json($conversation);
+    }
+
+    private function formatSeasonLabel(int $seasonYear): string
+    {
+        return $seasonYear . '-' . substr((string) ($seasonYear + 1), -2);
+    }
+
+    private function formatSingleGameTitle(string $metric): string
+    {
+        return match ($metric) {
+            'points' => 'Single-Game Scoring Leaders',
+            'rebounds' => 'Single-Game Rebound Leaders',
+            'assists' => 'Single-Game Assist Leaders',
+            'steals' => 'Single-Game Steal Leaders',
+            'blocks' => 'Single-Game Block Leaders',
+            default => 'Single-Game Leaders',
+        };
     }
 }

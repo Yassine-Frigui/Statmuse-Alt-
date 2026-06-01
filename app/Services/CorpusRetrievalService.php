@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Championship;
 use App\Models\CorpusEntry;
 use App\Models\Game;
+use App\Models\GamePlayerStat;
+use App\Models\Season;
 use App\Models\Player;
 use App\Models\PlayerSeasonStat;
 use App\Models\Team;
@@ -65,6 +67,59 @@ class CorpusRetrievalService
             ->get();
     }
 
+    public function getSingleGameScoringLeaders(?int $seasonYear = null, int $limit = 10, string $metric = 'points'): Collection
+    {
+        $metric = $this->normalizeStatMetric($metric);
+
+        $query = GamePlayerStat::query()
+            ->join('games', 'game_player_stats.game_id', '=', 'games.id')
+            ->join('seasons', 'games.season_id', '=', 'seasons.id')
+            ->join('players', 'game_player_stats.player_id', '=', 'players.id')
+            ->leftJoin('teams', 'game_player_stats.team_id', '=', 'teams.id')
+            ->select([
+                'game_player_stats.id',
+                'game_player_stats.game_id',
+                'game_player_stats.player_id',
+                'game_player_stats.team_id',
+                'game_player_stats.points',
+                'game_player_stats.rebounds',
+                'game_player_stats.assists',
+                'game_player_stats.steals',
+                'game_player_stats.blocks',
+                'games.date as game_date',
+                'games.stage as game_stage',
+                'seasons.year as season_year',
+                'seasons.label as season_label',
+                'players.first_name',
+                'players.last_name',
+                'players.position',
+                'teams.name as team_name',
+                'teams.abbreviation as team_abbreviation',
+            ])
+            ->orderByDesc('game_player_stats.' . $metric)
+            ->orderBy('games.date', 'desc')
+            ->orderBy('players.last_name')
+            ->limit($limit);
+
+        if ($seasonYear !== null) {
+            $query->where('seasons.year', $seasonYear);
+        }
+
+        return $query->get();
+    }
+
+    private function normalizeStatMetric(string $metric): string
+    {
+        return in_array($metric, ['points', 'rebounds', 'assists', 'steals', 'blocks'], true)
+            ? $metric
+            : 'points';
+    }
+
+    public function latestSeasonYear(): ?int
+    {
+        return Season::max('year');
+    }
+
     public function getPlayerInfo(string $name): Collection
     {
         return Player::where('first_name', 'LIKE', "%{$name}%")
@@ -106,6 +161,7 @@ class CorpusRetrievalService
             'teams' => new Team(),
             'seasons' => new \App\Models\Season(),
             'games' => new Game(),
+            'game_player_stats' => new GamePlayerStat(),
             'championships' => new Championship(),
             'corpus_entries' => new CorpusEntry(),
             'player_season_stats' => new PlayerSeasonStat(),

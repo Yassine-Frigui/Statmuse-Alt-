@@ -1,0 +1,20 @@
+Query Result
+single -game most points scored in the 2024-2025 by a player
+
+Conversation
+
+#null
+
+I apologize, but the provided data does not contain information about the most points scored in the **2023-2024 season**. The data consists of a list of legendary NBA players and their general bios, not their statistics for a specific season.
+
+id	nba api id	first name	last name	position	height	weight	birth date	college	drafted year	bio	created at	updated at
+1	—	Kareem	Abdul-Jabbar	C	7-2	225	1947-04-16	UCLA	1969	Legendary center and all-time leading scorer with 38387 points. Won 6 NBA championships and 6 MVP awards.	2026-05-31T21:52:29.000000Z	2026-05-31T21:52:29.000000Z
+2	—	Michael	Jordan	SG	6-6	216	1963-02-17	North Carolina	1984	Widely considered the greatest basketball player of all time. Won 6 NBA championships with the Chicago Bulls.	2026-05-31T21:52:29.000000Z	2026-05-31T21:52:29.000000Z
+3	2544	LeBron	James	SF	6-9	250	1984-12-30	St. Vincent-St. Mary HS	2003	Four-time NBA champion and all-time leading scorer in NBA history. Known for unprecedented longevity and versatility.	2026-05-31T21:52:29.000000Z	2026-06-01T00:33:38.000000Z
+4	—	Magic	Johnson	PG	6-9	255	1959-08-14	Michigan State	1979	Revolutionary point guard who led the Showtime Lakers to 5 NBA championships. 3-time MVP and 3-time Finals MVP.	2026-05-31T21:52:29.000000Z	2026-05-31T21:52:29.000000Z
+5	1628444	Larry	Bird	SF	6-9	220	1956-12-07	Indiana State	1978	Boston Celtics legend who won 3 NBA championships and 3 MVP awards. Known for clutch shooting and basketball IQ.	2026-05-31T21:52:29.000000Z	2026-06-01T03:18:39.000000Z
+6	—	Wilt	Chamberlain	C	7-1	275	1936-08-21	Kansas	1959	Scored 100 points in a single game and averaged 50.4 PPG in 1961-62. Won 2 NBA championships and 4 MVP awards.	2026-05-31T21:52:29.000000Z	2026-05-31T21:52:29.000000Z
+7	—	Bill	Russell	C	6-10	220	1934-02-12	San Francisco	1956	Won 11 NBA championships in 13 seasons with the Boston Celtics. 5-time MVP and greatest winner in sports history.	2026-05-31T21:52:29.000000Z	2026-05-31T21:52:29.000000Z
+8	—	Shaquille	O'Neal	C	7-1	325	1972-03-06	LSU	1992	Dominant center who won 4 NBA championships. 3-time Finals MVP and 15-time All-Star.	2026-05-31T21:52:29.000000Z	2026-05-31T21:52:29.000000Z
+9	1495	Tim	Duncan	PF	6-11	250	1976-04-25	Wake Forest	1997	Fundamentally sound power forward who won 5 NBA championships with the San Antonio Spurs. 2-time MVP.	2026-05-31T21:52:29.000000Z	2026-06-01T03:54:28.000000Z
+10	977	Kobe	Bryant	SG	6-6	212	1978-08-23
