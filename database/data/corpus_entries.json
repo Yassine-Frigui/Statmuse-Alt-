@@ -1,0 +1,58 @@
+[
+  {
+    "title": "ABA-NBA Merger",
+    "content": "The ABA-NBA merger took place in 1976, ending the American Basketball Association's nine-year run as a rival league. Four ABA teams joined the NBA: the Denver Nuggets, Indiana Pacers, San Antonio Spurs, and New York Nets. The merger brought several innovations into the NBA, most notably the three-point line and the slam dunk contest. Key ABA stars like Julius Erving, Moses Malone, and George Gervin continued their careers in the NBA.",
+    "category": "historical_event",
+    "tags": ["aba", "merger", "history", "three-point line"],
+    "source": "NBA Official History"
+  },
+  {
+    "title": "The Draft Lottery System",
+    "content": "The NBA Draft Lottery was introduced in 1985 to prevent teams from intentionally losing games (tanking) to secure the first overall pick. The current format, established in 2019, gives the three worst teams equal odds (14%) of winning the top pick. The lottery involves 14 ping-pong balls drawn in a specific sequence to determine the top four picks. The remaining picks are assigned in reverse order of regular season record.",
+    "category": "rules",
+    "tags": ["draft", "lottery", "rules", "tanking"],
+    "source": "NBA Official Rulebook"
+  },
+  {
+    "title": "The 1992 Dream Team",
+    "content": "The 1992 United States men's Olympic basketball team, known as the Dream Team, is widely regarded as the greatest sports team ever assembled. Featuring Michael Jordan, Magic Johnson, Larry Bird, Charles Barkley, and other NBA superstars, the team won the gold medal in Barcelona with an average margin of victory of 43.8 points. This marked the first time NBA players were allowed to compete in the Olympics.",
+    "category": "historical_event",
+    "tags": ["dream team", "olympics", "usa basketball", "1992"],
+    "source": "USA Basketball Archives"
+  },
+  {
+    "title": "The Basketball Court Dimensions",
+    "content": "An NBA basketball court is 94 feet long and 50 feet wide. The three-point line is 23 feet 9 inches from the basket at the top of the arc and 22 feet in the corners. The free-throw line is 15 feet from the backboard. The rim is 10 feet high. The key (paint) is 16 feet wide. The backboard is 6 feet wide and 3.5 feet tall.",
+    "category": "rules",
+    "tags": ["court", "dimensions", "rules", "measurements"],
+    "source": "NBA Official Rulebook"
+  },
+  {
+    "title": "The 6th Man Award",
+    "content": "The NBA Sixth Man of the Year Award is given annually to the best performing player who comes off the bench (does not start in most games). Established in 1983, notable winners include Kevin McHale, Detlef Schrempf, Manu Ginobili, James Harden, Lou Williams (3-time winner), and Jamal Crawford (3-time winner). The award recognizes the value of depth players who provide a spark when entering the game.",
+    "category": "award_info",
+    "tags": ["sixth man", "awards", "bench players"],
+    "source": "NBA Awards History"
+  },
+  {
+    "title": "The 1962 Season – Wilt Chamberlain's 50 PPG Season",
+    "content": "In the 1961-62 NBA season, Wilt Chamberlain set records that still stand today. He averaged 50.4 points per game, scored 4,029 total points, and famously scored 100 points in a single game against the New York Knicks on March 2, 1962, in Hershey, Pennsylvania. He also averaged 25.7 rebounds per game that season. Remarkably, the Philadelphia Warriors did not win the championship, losing to the Boston Celtics in the Eastern Division Finals.",
+    "category": "historical_event",
+    "tags": ["chamberlain", "100 points", "1962", "record"],
+    "source": "NBA Encyclopedia"
+  },
+  {
+    "title": "How the Salary Cap Works",
+    "content": "The NBA salary cap is a limit on the total amount of money that teams can pay their players. For the 2023-24 season, the cap was approximately $136 million. The cap is calculated as a percentage of league revenue. Teams can exceed the cap using exceptions such as the Mid-Level Exception, Bird Exception, and Rookie Exception. The luxury tax threshold is set above the cap, and teams that exceed it pay additional penalties.",
+    "category": "rules",
+    "tags": ["salary cap", "cba", "luxury tax", "financial"],
+    "source": "NBA Collective Bargaining Agreement"
+  },
+  {
+    "title": "The Three-Point Revolution",
+    "content": "The three-point shot was adopted by the NBA in the 1979-80 season. For the first two decades, it was a low-volume weapon, with teams averaging fewer than 10 attempts per game. The 2010s saw a dramatic increase in three-point shooting, led by Stephen Curry and the Golden State Warriors. In the 2022-23 season, teams averaged 34.2 three-point attempts per game, compared to just 2.8 in 1980-81, fundamentally changing NBA strategy.",
+    "category": "historical_event",
+    "tags": ["three-point", "curry", "analytics", "evolution"],
+    "source": "NBA Statistical Analysis"
+  }
+]
