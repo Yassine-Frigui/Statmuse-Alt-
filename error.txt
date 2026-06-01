@@ -1,1 +1,7 @@
 headers.map((h) => esc(this.formatCell(r[h]))).join(',')) ].join('\n'); const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'query-' + (this.result?.conversation_id ?? Date.now()) + '.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); } }" class="min-h-screen bg-court-black text-white" >
+
+
+
+
+
+https://docs.google.com/document/d/1TpvV-saUQmLYt4MCSxxRZiI_RoaIv4CNbbifyEsziOE/edit?usp=sharing
