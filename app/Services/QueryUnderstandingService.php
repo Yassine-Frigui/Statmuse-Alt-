@@ -78,8 +78,20 @@ PROMPT;
           );
         }
 
-        if ($this->matchesAny($normalized, ['top', 'scorer', 'ranking', 'leaders', 'all time'])) {
-            return $this->buildIntentPayload(IntentType::RankingQuery, $question, $this->extractMetric($normalized) ?? 'points', 'all_time', $this->extractLimit($normalized) ?? 10, 'NBA');
+        if ($this->matchesAny($normalized, ['top', 'scorer', 'ranking', 'leaders', 'all time', 'best', 'leading'])) {
+            // Determine metric (points, rebounds, assists, etc.)
+            $metric = $this->extractMetric($normalized) ?? 'points';
+            // Extract season year or range
+            $seasonYear = $this->extractSeasonYear($question);
+            // Build structured query for ranking query
+            return $this->buildIntentPayload(
+                IntentType::RankingQuery,
+                $question,
+                $metric,
+                $seasonYear ? 'season' : 'all_time',
+                $this->extractLimit($normalized) ?? 10,
+                'NBA'
+            );
         }
 
         if ($this->matchesAny($normalized, ['won the championship', 'nba championship', 'who won in'])) {
@@ -123,13 +135,25 @@ PROMPT;
 
     private function extractSeasonYear(string $question): ?int
     {
-      if (preg_match_all('/\d{4}/', $question, $matches) && !empty($matches[0])) {
-        $year = (int) $matches[0][0];
-
-        return ($year >= 1900 && $year <= 2100) ? $year : null;
-      }
-
-      return null;
+        // First check for season range like "2022-2023"
+        if (preg_match('/(\d{4})\s*-\s*(\d{2}|\d{4})/', $question, $matches)) {
+            $startYear = (int) $matches[1];
+            $endStr = $matches[2];
+            // Handle both "2022-23" and "2022-2023" formats
+            $endYear = strlen($endStr) === 2 ? (int) substr($matches[1], 0, 2) . $endStr : (int) $endStr;
+            
+            // Return start year for backward compatibility, but we could also return an array
+            // For now, return the start year to maintain compatibility with existing code
+            return ($startYear >= 1900 && $startYear <= 2100) ? $startYear : null;
+        }
+        
+        // Fall back to single year extraction
+        if (preg_match_all('/\d{4}/', $question, $matches) && !empty($matches[0])) {
+            $year = (int) $matches[0][0];
+            return ($year >= 1900 && $year <= 2100) ? $year : null;
+        }
+        
+        return null;
     }
 
     private function extractLimit(string $question): ?int
@@ -157,15 +181,16 @@ PROMPT;
       return false;
     }
 
-    private function extractMetric(string $normalizedQuestion): ?string
+private function extractMetric(string $normalizedQuestion): ?string
     {
-      return match (true) {
-        str_contains($normalizedQuestion, 'rebounds') => 'rebounds',
-        str_contains($normalizedQuestion, 'assists') => 'assists',
-        str_contains($normalizedQuestion, 'steals') => 'steals',
-        str_contains($normalizedQuestion, 'blocks') => 'blocks',
-        default => null,
-      };
+      if (preg_match('/\brebound(er|ing)?s?\b/', $normalizedQuestion)) return 'rebounds';
+      if (preg_match('/\bassists?\b/', $normalizedQuestion)) return 'assists';
+      if (preg_match('/\bsteals?\b/', $normalizedQuestion)) return 'steals';
+      if (preg_match('/\bblocks?\b/', $normalizedQuestion)) return 'blocks';
+      if (preg_match('/\bscorers?\b/', $normalizedQuestion)) return 'points';
+      if (preg_match('/\bpoints?\b/', $normalizedQuestion)) return 'points';
+      
+      return null;
     }
 
     private function buildIntentPayload(IntentType $intent, string $question, ?string $metric, ?string $period, int $limit, string $competition): array

@@ -28,6 +28,22 @@ class DataController extends Controller
         }
     }
 
+    public function ranking()
+    {
+        $seasonYear = request('season');
+        $metric = request('metric', 'points');
+        $limit = request('limit', 10);
+        $season = Season::where('year', $seasonYear)->first();
+
+        $query = PlayerSeasonStat::when($season, fn($q) => $q->where('season_id', $season->id))
+            ->orderByDesc($metric)
+            ->limit($limit)
+            ->with('player:id,first_name,last_name,nba_api_id');
+        $data = $query->get();
+
+        return response()->json($data);
+    }
+
     public function index()
     {
         $seasons = Season::where('year', '>=', 2015)->orderBy('year', 'desc')->get();
@@ -70,8 +86,7 @@ class DataController extends Controller
         }
 
         $seasonStatsQuery = PlayerSeasonStat::where('season_id', $season?->id)
-            ->with('player:id,first_name,last_name,nba_api_id');
-
+            ->with('player:id,first_name,last_//C
         $seasonStats = $seasonStatsQuery->orderByDesc('points')->limit(20)->get();
 
         $seasonSummary = [];
