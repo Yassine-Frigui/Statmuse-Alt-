@@ -26,7 +26,7 @@ Illustrer la structure des données de base et les relations entre utilisateurs,
 
 ### Description
 Ce diagramme modélise le cœur de l'authentification et de la gestion multi-tenant. Il montre comment les utilisateurs sont associés aux établissements via les profils staff, et comment une candidature peut mener à la création d'un établissement. Ce diagramme est fondamental car il établit la base de l'architecture multi-tenant par tenantId, essentielle pour l'isolation des données entre établissements médicaux différents dans la plateforme SaaS.
-
+<!--  -->
 ---
 
 ## Diagramme de Cas d'Utilisation - Sprint 1 (tab:sprint1_usecase)

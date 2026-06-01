@@ -6,6 +6,7 @@ use App\Enums\IntentType;
 use App\Http\Requests\ChatbotRequest;
 use App\Models\Conversation;
 use App\Services\CorpusRetrievalService;
+use App\Services\GeminiService;
 use App\Services\QueryTransformationService;
 use App\Services\QueryUnderstandingService;
 use App\Services\ResponseFormatterService;
@@ -18,6 +19,7 @@ class ChatbotController extends Controller
         private QueryTransformationService $transformationService,
         private CorpusRetrievalService $retrievalService,
         private ResponseFormatterService $formatterService,
+        private GeminiService $gemini
     ) {}
 
     public function index()
@@ -87,7 +89,7 @@ class ChatbotController extends Controller
                 $reply = $this->formatterService->formatSimple(
                     $this->formatRankingTitle($metric) . ($seasonYear ? ' ' . $this->formatSeasonLabel((int) $seasonYear) : ' All Time'),
                     $data->toArray(),
-                    ['player.first_name', 'player.last_name', 'total', 'player.nba_api_id']
+                    ['first_name', 'last_name', 'total', 'nba_api_id']
                 );
 
                 $conversation = null;
@@ -150,6 +152,28 @@ class ChatbotController extends Controller
 
             return response()->json([
                 'reply' => 'Sorry, I encountered an error processing your question. Please try again.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function insight(ChatbotRequest $request): JsonResponse
+    {
+        $prompt = $request->input('message');
+
+        try {
+            $response = $this->gemini->generateInsight($prompt);
+
+            return response()->json([
+                'reply' => $response['content'] ?? 'No insight generated.',
+                'source' => 'gemini',
+                'prompt' => $prompt,
+            ]);
+        } catch (\Exception $e) {
+            report($e);
+
+            return response()->json([
+                'reply' => 'Unable to generate insight at this time. Please try again.',
                 'error' => $e->getMessage(),
             ], 500);
         }

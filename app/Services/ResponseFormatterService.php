@@ -58,7 +58,18 @@ class ResponseFormatterService
         $output .= "| {$header} |\n| {$separator} |\n";
 
         foreach ($rows as $row) {
-            $values = array_map(fn($col) => $row[$col] ?? '-', $columns);
+            $values = array_map(function($col) use ($row) {
+                // Handle dot notation for nested keys
+                if (str_contains($col, '.')) {
+                    $keys = explode('.', $col);
+                    $value = $row;
+                    foreach ($keys as $key) {
+                        $value = $value[$key] ?? null;
+                    }
+                    return $value ?? '-';
+                }
+                return $row[$col] ?? '-';
+            }, $columns);
             $output .= '| ' . implode(' | ', $values) . " |\n";
         }
 

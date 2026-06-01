@@ -1,0 +1,49 @@
+1. Intent Analysis
+
+Complete
+
+2. Structured Query
+
+Complete
+
+3. Corpus Fetch
+
+Complete
+
+4. Formatter
+
+Complete
+
+Query Result
+top rebounders of the 2020's
+
+Conversation
+
+#null
+
+**Top Rebounders 2020-21**
+
+| Player.first name | Player.last name | Total | Player.nba api id |
+| --- | --- | --- | --- |
+| - | - | 1131 | - |
+| - | - | 1123 | - |
+| - | - | 1025 | - |
+| - | - | 964 | - |
+| - | - | 922 | - |
+| - | - | 886 | - |
+| - | - | 875 | - |
+| - | - | 868 | - |
+| - | - | 836 | - |
+| - | - | 819 | - |
+
+player id	total	player
+581	1131	{"id":581,"nba_api_id":203497,"first_name":"Rudy","last_name":"Gobert","position":null,"height":null,"weight":null,"birth_date":null,"college":null,"drafted_year":null,"bio":"Imported from NBA API","created_at":"2026-05-31T22:50:09.000000Z","updated_at":"2026-06-01T00:33:43.000000Z"}
+619	1123	{"id":619,"nba_api_id":203991,"first_name":"Clint","last_name":"Capela","position":null,"height":null,"weight":null,"birth_date":null,"college":null,"drafted_year":null,"bio":"Imported from NBA API","created_at":"2026-05-31T22:50:11.000000Z","updated_at":"2026-06-01T00:33:45.000000Z"}
+617	1025	{"id":617,"nba_api_id":1629028,"first_name":"Deandre","last_name":"Ayton","position":null,"height":null,"weight":null,"birth_date":null,"college":null,"drafted_year":null,"bio":"Imported from NBA API","created_at":"2026-05-31T22:50:11.000000Z","updated_at":"2026-06-01T00:33:45.000000Z"}
+14	964	{"id":14,"nba_api_id":203507,"first_name":"Giannis","last_name":"Antetokounmpo","position":"PF","height":"6-11","weight":242,"birth_date":"1994-12-06","college":"None","drafted_year":"2013","bio":"2-time NBA MVP and 2021 NBA champion. Known as the Greek Freak for his unique combination of size and athleticism.","created_at":"2026-05-31T21:52:29.000000Z","updated_at":"2026-06-01T00:33:37.000000Z"}
+32	922	{"id":32,"nba_api_id":203999,"first_name":"Nikola","last_name":"Jokic","position":"C","height":"6-11","weight":284,"birth_date":"1995-02-19","college":"None","drafted_year":"2014","bio":"3-time MVP and 2023 NBA champion and Finals MVP. Revolutionary passing center.","created_at":"2026-05-31T21:52:29.000000Z","updated_at":"2026-06-01T00:33:38.000000Z"}
+589	886	{"id":589,"nba_api_id":202685,"first_name":"Jonas","last_name":"Valanciunas","position":null,"height":null,"weight":null,"birth_date":null,"college":null,"drafted_year":null,"bio":"Imported from NBA API","created_at":"2026-05-31T22:50:09.000000Z","updated_at":"2026-06-01T00:33:43.000000Z"}
+462	875	{"id":462,"nba_api_id":1626184,"first_name":"Julius","last_name":"Randle","position":null,"height":null,"weight":null,"birth_date":null,"college":null,"drafted_year":null,"bio":"Imported from NBA API","created_at":"2026-05-31T22:50:05.000000Z","updated_at":"2026-06-01T16:06:46.000000Z"}
+482	868	{"id":482,"nba_api_id":202696,"first_name":"Nikola","last_name":"Vucevic","position":null,"height":null,"weight":null,"birth_date":null,"college":null,"drafted_year":null,"bio":"Imported from NBA API","created_at":"2026-05-31T22:50:06.000000Z","updated_at":"2026-06-01T00:33:40.000000Z"}
+1603	836	{"id":1603,"nba_api_id":202683,"first_name":"Unknown","last_name":"Freedom","position":null,"height":null,"weight":null,"birth_date":null,"college":null,"drafted_year":null,"bio":"Imported from PBP data","created_at":"2026-06-01T01:52:48.000000Z","updated_at":"2026-06-01T01:52:48.000000Z"}
+30	819	{"id":30,"nba_api_id":201566,"first_name":"Russell","last_name":"Westbrook","position":"PG","height":"6-3","weight":200,"birth_date":"1988-11-12","college":"UCLA","drafted_year":"2008","bio":"2017 MVP and all-time leader in triple-doubles. Only player to average a triple-double in multiple seasons.","created_at":"2026-05-31T21:52:29.000000Z","updated_at":"2026-06-01T00:33:43.000000Z"}
