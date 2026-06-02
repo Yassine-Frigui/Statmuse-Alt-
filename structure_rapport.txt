@@ -1,0 +1,8 @@
+ntroduction & contexte du projet
+• Analyse des besoins et spécification
+• Conception (UML, architecture, base de données)
+• Implémentation (choix techniques, difficultés, solutions)
+• Section dédiée au Chatbot IA (prompt engineering, API choisie)
+• Section dédiée aux Tests (types, couverture, résultats)
+• (Optionnel) Section SonarCloud avec captures du dashboard
+• Conclusion et perspectives

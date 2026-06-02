@@ -21,6 +21,40 @@ Laravel is a web application framework with expressive, elegant syntax. We belie
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
+## Move The Dataset To Another Machine
+
+This project code is in git, but the NBA data itself lives in MySQL and should be moved separately.
+
+### Option 1: Copy the MySQL database
+
+On the source machine:
+
+```bash
+mysqldump -u root -p nba_query_engine > nba_query_engine.sql
+```
+
+On the new machine:
+
+```bash
+mysql -u root -p -e "CREATE DATABASE nba_query_engine CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p nba_query_engine < nba_query_engine.sql
+```
+
+This is the fastest way to move the thousands of games, player stats, seasons, teams, and conversation history.
+
+### Option 2: Rebuild the data on the new machine
+
+If you do not want to copy the database file, run the ingest/seed commands after cloning:
+
+```bash
+php artisan migrate --force
+php artisan db:seed --class=NbaCorpusSeeder
+php artisan nba:ingest --source=api --seasons=2021,2022,2023,2024
+php artisan nba:aggregate-stats --all
+```
+
+The repo also includes `scripts/migrate_sqlite_to_mysql.php` if you still have an old SQLite copy and want to move it into MySQL first.
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.

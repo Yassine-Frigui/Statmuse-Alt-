@@ -64,7 +64,7 @@
         </template>
 
         {{-- PipelineMonitor --}}
-        <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="mt-8 grid grid-cols-2 gap-4">
             <template x-for="s in pipelineStages" :key="s.key">
                 <div
                     class="bg-court-dark p-3 rounded-r transition-all"
@@ -189,6 +189,86 @@
                 </aside>
             </div>
         </template>
+
+        {{-- EngineTrace --}}
+        <template x-if="result && result.debug">
+            <div class="mt-8 bg-court-dark border border-white/10 rounded-xl overflow-hidden">
+                <button @click="showDebug = !showDebug" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="size-2 rounded-full" :class="result.debug.pipeline === 'local' ? 'bg-amber-500' : 'bg-green-500'"></div>
+                        <span class="font-display text-sm font-bold uppercase tracking-wide">Engine Trace</span>
+                        <span class="text-[10px] text-data-slate font-mono" x-text="'via ' + result.debug.pipeline"></span>
+                    </div>
+                    <svg class="size-4 text-data-slate transition-transform" :class="{ 'rotate-180': showDebug }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="showDebug" x-cloak class="border-t border-white/5 divide-y divide-white/5">
+                    <template x-for="(step, i) in result.debug.steps" :key="i">
+                        <div class="px-6 py-3">
+                            <div class="flex items-start gap-3">
+                                <span class="text-[10px] font-mono text-data-slate mt-0.5 shrink-0" x-text="'#' + i"></span>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs font-bold text-hoop-orange font-mono" x-text="step.step"></p>
+                                    <template x-if="step.error">
+                                        <p class="text-[11px] text-red-400 font-mono mt-1 break-all" x-text="step.error"></p>
+                                    </template>
+                                    <template x-if="step.prompt_sent">
+                                        <div class="mt-2">
+                                            <p class="text-[10px] text-data-slate uppercase tracking-wider mb-1">Gemini Prompt:</p>
+                                            <pre class="text-[11px] text-data-slate/80 font-mono whitespace-pre-wrap max-h-48 overflow-y-auto bg-black/20 rounded p-2" x-text="truncate(step.prompt_sent, 800)"></pre>
+                                        </div>
+                                    </template>
+                                    <template x-if="step.raw_response">
+                                        <div class="mt-2">
+                                            <p class="text-[10px] text-data-slate uppercase tracking-wider mb-1">Gemini Response:</p>
+                                            <pre class="text-[11px] text-data-slate/80 font-mono whitespace-pre-wrap max-h-48 overflow-y-auto bg-black/20 rounded p-2" x-text="truncate(step.raw_response, 600)"></pre>
+                                        </div>
+                                    </template>
+                                    <template x-if="step.parsed">
+                                        <div class="mt-2">
+                                            <p class="text-[10px] text-data-slate uppercase tracking-wider mb-1">Parsed:</p>
+                                            <pre class="text-[11px] text-green-400/80 font-mono whitespace-pre-wrap max-h-48 overflow-y-auto bg-black/20 rounded p-2" x-text="formatJson(step.parsed)"></pre>
+                                        </div>
+                                    </template>
+                                    <template x-if="step.players">
+                                        <p class="text-[11px] text-data-slate mt-1">Players: <span class="text-white" x-text="step.players.join(', ') || 'none'"></span></p>
+                                    </template>
+                                    <template x-if="step.teams">
+                                        <p class="text-[11px] text-data-slate mt-1">Teams: <span class="text-white" x-text="step.teams.join(', ') || 'none'"></span></p>
+                                    </template>
+                                    <template x-if="step.type">
+                                        <p class="text-[11px] text-data-slate mt-1">Type: <span class="text-white font-mono" x-text="step.type"></span></p>
+                                    </template>
+                                    <template x-if="step.table">
+                                        <p class="text-[11px] text-data-slate mt-1">Table: <span class="text-white font-mono" x-text="step.table"></span></p>
+                                    </template>
+                                    <template x-if="step.metric">
+                                        <p class="text-[11px] text-data-slate mt-1">Metric: <span class="text-white font-mono" x-text="step.metric"></span></p>
+                                    </template>
+                                    <template x-if="step.year !== undefined">
+                                        <p class="text-[11px] text-data-slate mt-1">Year: <span class="text-white font-mono" x-text="step.year === null ? 'none detected' : step.year"></span></p>
+                                    </template>
+                                    <template x-if="step.row_count !== undefined">
+                                        <p class="text-[11px] text-data-slate mt-1">Rows returned: <span class="text-white font-mono" x-text="step.row_count"></span></p>
+                                    </template>
+                                    <template x-if="step.query_structure">
+                                        <div class="mt-2">
+                                            <p class="text-[10px] text-data-slate uppercase tracking-wider mb-1">Query Structure:</p>
+                                            <pre class="text-[11px] text-sky-400/80 font-mono whitespace-pre-wrap max-h-48 overflow-y-auto bg-black/20 rounded p-2" x-text="formatJson(step.query_structure)"></pre>
+                                        </div>
+                                    </template>
+                                    <template x-if="step.sql">
+                                        <div class="mt-2">
+                                            <p class="text-[10px] text-data-slate uppercase tracking-wider mb-1">Generated SQL:</p>
+                                            <pre class="text-[11px] text-emerald-400/80 font-mono whitespace-pre-wrap bg-black/20 rounded p-2" x-text="step.sql"></pre>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
     </main>
 
     {{-- StatusFooter --}}
@@ -222,6 +302,11 @@ document.addEventListener('alpine:init', () => {
         timer2: null,
         timer3: null,
         questionInput: '',
+        showDebug: false,
+
+        truncate(s, max) { return !s ? '' : s.length > max ? s.slice(0, max) + '...' : s; },
+
+        formatJson(obj) { try { return JSON.stringify(obj, null, 2); } catch(e) { return String(obj); } },
 
         examples: [
             'Top 10 scorers all-time',
@@ -232,10 +317,8 @@ document.addEventListener('alpine:init', () => {
         ],
 
         pipelineStages: [
-            { key: 'understanding', label: '1. Intent Analysis', detail: 'Gemini extracts entities' },
-            { key: 'transforming', label: '2. Structured Query', detail: 'Generating Eloquent...' },
-            { key: 'retrieving', label: '3. Corpus Fetch', detail: 'Querying MySQL' },
-            { key: 'formatting', label: '4. Formatter', detail: 'Natural-language reply' },
+            { key: 'analyzing', label: '1. Gemini Analysis', detail: 'Schema-aware query planning' },
+            { key: 'formatting', label: '2. Formatter', detail: 'Building final reply' },
         ],
 
         get loading() {
@@ -252,7 +335,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         stageStatus(key) {
-            const order = ['understanding', 'transforming', 'retrieving', 'formatting', 'done'];
+            const order = ['analyzing', 'formatting', 'done'];
             const idx = order.indexOf(key);
             const activeIdx = order.indexOf(this.stage);
             if (this.stage === 'done') return 'done';
@@ -265,7 +348,6 @@ document.addEventListener('alpine:init', () => {
         clearAllTimers() {
             if (this.timer1) { clearTimeout(this.timer1); this.timer1 = null; }
             if (this.timer2) { clearTimeout(this.timer2); this.timer2 = null; }
-            if (this.timer3) { clearTimeout(this.timer3); this.timer3 = null; }
         },
 
         async runQuery(q) {
@@ -273,11 +355,9 @@ document.addEventListener('alpine:init', () => {
             this.question = q;
             this.result = null;
             this.error = null;
-            this.stage = 'understanding';
+            this.stage = 'analyzing';
 
-            this.timer1 = setTimeout(() => { this.stage = 'transforming'; }, 400);
-            this.timer2 = setTimeout(() => { this.stage = 'retrieving'; }, 900);
-            this.timer3 = setTimeout(() => { this.stage = 'formatting'; }, 1500);
+            this.timer1 = setTimeout(() => { this.stage = 'formatting'; }, 1000);
 
             const start = performance.now();
             try {

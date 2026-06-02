@@ -29,6 +29,27 @@ class TeamController extends Controller
         return view('teams.index', compact('teams', 'conferences'));
     }
 
+    public function search(Request $request)
+    {
+        $query = $request->get('q', '');
+        $teams = Team::where(function ($q) use ($query) {
+            $q->where('name', 'like', "%{$query}%")
+              ->orWhere('city', 'like', "%{$query}%")
+              ->orWhere('abbreviation', 'like', "%{$query}%");
+        })
+            ->select('id', 'name', 'city', 'abbreviation', 'conference')
+            ->orderBy('name')
+            ->limit(10)
+            ->get()
+            ->map(fn($t) => [
+                'id' => $t->id,
+                'label' => "{$t->city} {$t->name} ({$t->abbreviation})",
+                'conference' => $t->conference,
+            ]);
+
+        return response()->json($teams);
+    }
+
     public function show(Team $team)
     {
         $team->load(['championships.season', 'homeGames' => function ($q) {

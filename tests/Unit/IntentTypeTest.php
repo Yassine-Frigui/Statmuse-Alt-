@@ -20,10 +20,13 @@ class IntentTypeTest extends TestCase
         $this->assertContains('season_stats', $values);
         $this->assertContains('head_to_head', $values);
         $this->assertContains('award_query', $values);
+        $this->assertContains('rule_explanation', $values);
+        $this->assertContains('comparison_query', $values);
+        $this->assertContains('single_game_scoring', $values);
     }
 
-    public function test_enum_has_ten_cases(): void
+    public function test_enum_has_eleven_cases(): void
     {
-        $this->assertCount(10, IntentType::cases());
+        $this->assertCount(11, IntentType::cases());
     }
 }

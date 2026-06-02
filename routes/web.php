@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/chatbot');
 
+Route::get('/compare', [App\Http\Controllers\CompareController::class, 'index'])->name('compare.index');
+
 Route::get('/data', [DataController::class, 'index'])->name('data.index');
 
 Route::get('/dashboard', function () {

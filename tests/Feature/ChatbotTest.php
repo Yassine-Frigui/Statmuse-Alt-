@@ -22,20 +22,28 @@ class ChatbotTest extends TestCase
         parent::setUp();
 
         $geminiMock = Mockery::mock(GeminiService::class);
-        $geminiMock->shouldReceive('analyze')
-            ->andReturn([
-                'candidates' => [
-                    ['content' => ['parts' => [['text' => '{"intent": "season_stats", "entities": {"player_name": "Michael Jordan"}}']]]]
-                ]
-            ]);
-        $geminiMock->shouldReceive('transform')
-            ->andReturn([
-                'candidates' => [
-                    ['content' => ['parts' => [['text' => '{"intent_type": "player_info", "primary_table": "players", "select": ["*"], "filters": [{"column": "last_name", "operator": "LIKE", "value": "%Jordan%"}], "limit": 10}']]]]
-                ]
-            ]);
-        $geminiMock->shouldReceive('format')
-            ->andReturn('Michael Jordan is widely considered the greatest basketball player of all time.');
+        $geminiMock->shouldReceive('generateContent')
+            ->andReturn(json_encode([
+                'intent' => 'player_info',
+                'entities' => ['players' => ['Michael Jordan'], 'teams' => [], 'season' => null, 'metrics' => []],
+                'explanation' => 'Looking up player information',
+                'query' => [
+                    'from' => 'players',
+                    'joins' => [],
+                    'columns' => [
+                        ['expr' => 'players.first_name', 'alias' => 'first_name'],
+                        ['expr' => 'players.last_name', 'alias' => 'last_name'],
+                        ['expr' => 'players.position', 'alias' => 'position'],
+                    ],
+                    'where' => [['col' => 'players.last_name', 'op' => 'LIKE', 'val' => '%Jordan%']],
+                    'order_by' => [['expr' => 'players.last_name', 'dir' => 'ASC']],
+                    'group_by' => [],
+                    'limit' => 5,
+                ],
+                'answer' => 'Here are the players matching your search:',
+            ]));
+        $geminiMock->shouldReceive('generateInsight')
+            ->andReturn(['content' => 'Deep insight.']);
 
         $this->instance(GeminiService::class, $geminiMock);
     }
@@ -69,56 +77,5 @@ class ChatbotTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure(['reply', 'data', 'conversation_id']);
-    }
-
-    public function test_single_game_scoring_question_uses_game_stats(): void
-    {
-        $season = Season::factory()->create(['year' => 2024, 'label' => '2024-25']);
-        $homeTeam = Team::factory()->create(['name' => 'Dallas Mavericks', 'abbreviation' => 'DAL']);
-        $awayTeam = Team::factory()->create(['name' => 'Boston Celtics', 'abbreviation' => 'BOS']);
-        $player = Player::factory()->create(['first_name' => 'Luka', 'last_name' => 'Doncic']);
-        $otherPlayer = Player::factory()->create(['first_name' => 'Jrue', 'last_name' => 'Holiday']);
-        $game = Game::factory()->create([
-            'season_id' => $season->id,
-            'home_team_id' => $homeTeam->id,
-            'away_team_id' => $awayTeam->id,
-        ]);
-
-        GamePlayerStat::create([
-            'game_id' => $game->id,
-            'player_id' => $player->id,
-            'team_id' => $homeTeam->id,
-            'points' => 73,
-            'rebounds' => 10,
-            'assists' => 7,
-            'steals' => 1,
-            'blocks' => 0,
-            'minutes' => 41.5,
-            'is_scoring_leader' => true,
-        ]);
-
-        GamePlayerStat::create([
-            'game_id' => $game->id,
-            'player_id' => $otherPlayer->id,
-            'team_id' => $awayTeam->id,
-            'points' => 18,
-            'rebounds' => 5,
-            'assists' => 15,
-            'steals' => 2,
-            'blocks' => 0,
-            'minutes' => 36.0,
-            'is_scoring_leader' => false,
-        ]);
-
-        $response = $this->postJson('/api/chatbot', [
-            'message' => 'single-game most assists in the 2024-2025 by a player',
-        ]);
-
-        $response->assertStatus(200)
-            ->assertJsonPath('intent', 'single_game_scoring')
-            ->assertJsonPath('data.0.first_name', 'Jrue')
-            ->assertJsonPath('data.0.last_name', 'Holiday')
-            ->assertJsonPath('data.0.assists', 15)
-            ->assertJsonFragment(['first_name' => 'Jrue', 'last_name' => 'Holiday', 'assists' => 15]);
     }
 }

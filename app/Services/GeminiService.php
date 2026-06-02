@@ -63,6 +63,28 @@ class GeminiService
         return $response['candidates'][0]['content']['parts'][0]['text'] ?? '';
     }
 
+    public function generateContent(string $prompt): string
+    {
+        $response = $this->call([
+            'system_instruction' => ['parts' => [['text' => 'You are an NBA database analyst. Return ONLY valid JSON.']]],
+            'contents' => [['parts' => [['text' => $prompt]]]],
+        ]);
+
+        return $response['candidates'][0]['content']['parts'][0]['text'] ?? '{}';
+    }
+
+    public function generateInsight(string $prompt): array
+    {
+        $response = $this->call([
+            'system_instruction' => ['parts' => [['text' => 'You are an NBA analyst providing deep insights. Be detailed and engaging.']]],
+            'contents' => [['parts' => [['text' => $prompt]]]],
+        ]);
+
+        $text = $response['candidates'][0]['content']['parts'][0]['text'] ?? '';
+
+        return ['content' => $text];
+    }
+
     private function call(array $payload): array
     {
         $url = $this->endpoint . '?key=' . $this->apiKey;
