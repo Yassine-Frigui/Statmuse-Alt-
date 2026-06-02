@@ -86,7 +86,7 @@ class DataController extends Controller
         }
 
         $seasonStatsQuery = PlayerSeasonStat::where('season_id', $season?->id)
-            ->with('player:id,first_name,last_//C
+            ->with('player:id,first_name,last_name');
         $seasonStats = $seasonStatsQuery->orderByDesc('points')->limit(20)->get();
 
         $seasonSummary = [];

@@ -1,0 +1,464 @@
+\documentclass[12pt,a4paper]{report}
+
+% --- Packages ---
+\usepackage[french]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{minted}
+
+% --- Colors ---
+\definecolor{codebg}{rgb}{0.95,0.95,0.95}
+\definecolor{hoopOrange}{RGB}{255,107,53}
+\definecolor{darkBg}{RGB}{18,18,24}
+
+% --- Code listing style ---
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{hoopOrange},
+}
+
+% --- Header / Footer ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\leftmark}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Title formatting ---
+\titleformat{\chapter}[hang]{\Huge\bfseries\color{hoopOrange}}{\thechapter.}{20pt}{\Huge}
+\titleformat{\section}{\Large\bfseries}{\thesection}{15pt}{\large}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{12pt}{\normalsize}
+
+% --- Document info ---
+\title{
+    \vspace*{3cm}
+    \Huge\textbf{NBA Query Engine}\\[0.5cm]
+    \Large{Moteur de requêtes naturelles pour l'analyse de données NBA}\\[1cm]
+    \large{Rapport de Projet}\\[0.3cm]
+    \large{Cycle d'ingénieurs 1 -- Tronc commun}
+}
+\author{
+    \textbf{Étudiant :} Yassine Frigui\\[0.3cm]
+    \textbf{Établissement :} iTeam University\\[0.3cm]
+    \textbf{Encadrant :} M. Amdouni Bilel
+}
+\date{\today}
+
+\begin{document}
+
+% --- Title page ---
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+% --- Table of contents ---
+\tableofcontents
+\newpage
+
+% --- Introduction ---
+\chapter*{Introduction générale}
+\addcontentsline{toc}{chapter}{Introduction générale}
+\setstretch{1.5}
+
+Ce rapport présente le projet \textbf{NBA Query Engine}, un moteur de requêtes en langage naturel dédié à l'analyse de données historiques de la NBA. L'objectif principal est de permettre aux utilisateurs de poser des questions en français ou en anglais sur les joueurs, les équipes, les saisons et les championnats NBA, et d'obtenir des réponses précises et contextualisées.
+
+Le projet s'inscrit dans le cadre d'un travail pratique du Cycle d'ingénieurs 1 (Tronc commun) à iTeam University. Il met en œuvre une architecture moderne combinant Laravel pour le backend, une intelligence artificielle générative (Google Gemini 2.5 Flash) pour la compréhension des requêtes, et une interface utilisateur double (Blade/Alpine.js et React/TypeScript).
+
+Ce rapport est structuré en deux chapitres :
+\begin{itemize}
+    \item Le \textbf{Chapitre 1} pose le contexte, les objectifs et l'analyse des besoins.
+    \item Le \textbf{Chapitre 2} détaille les aspects techniques : architecture, base de données, implémentation, intégration de l'IA et tests.
+\end{itemize}
+
+\newpage
+
+% ==========================================
+% CHAPTER 1 : CONTEXTE ET INTRODUCTION
+% ==========================================
+\chapter{Contexte et Introduction}
+
+\section{Présentation du projet}
+
+\subsection{Contexte général}
+
+La NBA (National Basketball Association) génère une quantité considérable de données statistiques chaque saison : points, rebonds, passes, pourcentages de tir, victoires, défaites, etc. Ces données sont précieuses pour les analystes, les journalistes, les entraîneurs et les fans. Cependant, l'exploitation de ces données reste souvent limitée aux experts capables d'écrire des requêtes SQL complexes.
+
+Le projet \textbf{NBA Query Engine} vise à démocratiser l'accès à ces données en proposant une interface en langage naturel. L'utilisateur peut poser une question comme \textit{« Qui a gagné le championnat NBA en 1998 ? »} ou \textit{« Compare Michael Jordan et LeBron James »} et obtenir une réponse instantanée.
+
+\subsection{Objectifs du projet}
+
+Les objectifs principaux du projet sont les suivants :
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Interrogation en langage naturel} : Permettre aux utilisateurs de poser des questions sur les données NBA sans aucune connaissance technique.
+    \item \textbf{Double pipeline d'exécution} : Utiliser l'IA Gemini comme moteur principal avec un fallback local pour garantir la disponibilité.
+    \item \textbf{Profils de joueurs riches} : Générer des profils contextuels incluant l'archétype, les forces/faiblesses et un rapport de scoutisme.
+    \item \textbf{Comparaison de joueurs} : Offrir une comparaison visuelle et statistique détaillée entre deux joueurs.
+    \item \textbf{Interface utilisateur moderne} : Proposer une expérience utilisateur fluide avec deux frontends (Blade et React).
+\end{enumerate}
+
+\section{Analyse des besoins}
+
+\subsection{Besoins fonctionnels}
+
+Les besoins fonctionnels identifiés sont les suivants :
+
+\begin{itemize}
+    \item \textbf{Requêtes sur les joueurs} : Statistiques individuelles, biographie, saisons, récompenses.
+    \item \textbf{Requêtes sur les équipes} : Informations générales, historique, confrontations directes.
+    \item \textbf{Requêtes sur les championnats} : Historique des titres, finales, MVP des finales.
+    \item \textbf{Classements et leaders} : Meilleurs marqueurs, rebondeurs, passeurs par saison ou carrière.
+    \item \textbf{Comparaisons} : Comparaison côte à côte de deux joueurs ou deux équipes.
+    \item \textbf{Scénarios hypothétiques} : Simulation de scénarios \textit{« what-if »} (fonctionnalité avancée).
+\end{itemize}
+
+\subsection{Besoins non fonctionnels}
+
+\begin{itemize}
+    \item \textbf{Performance} : Temps de réponse inférieur à 5 secondes pour les requêtes standards.
+    \item \textbf{Sécurité} : Protection contre les injections SQL, validation des entrées.
+    \item \textbf{Disponibilité} : Pipeline de secours local en cas d'indisponibilité de l'API Gemini.
+    \item \textbf{Extensibilité} : Architecture modulaire permettant d'ajouter de nouveaux types de requêtes.
+    \item \textbf{Maintenabilité} : Code documenté, tests automatisés, respect des conventions Laravel.
+\end{itemize}
+
+\section{Technologies utilisées}
+
+Le projet s'appuie sur un ensemble de technologies modernes :
+
+\begin{table}[h]
+\centering
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Catégorie} & \textbf{Technologies} \\
+\midrule
+Backend & PHP 8.2, Laravel 12, MySQL \\
+Frontend 1 & Blade, Alpine.js, Tailwind CSS \\
+Frontend 2 & React 19, TypeScript, TanStack Router, Tailwind CSS \\
+IA & Google Gemini 2.5 Flash \\
+Tests & PHPUnit 11, Mockery \\
+Base de données & MySQL (MariaDB 10.4) \\
+Outils & Composer, NPM, Git \\
+\bottomrule
+\end{tabularx}
+\caption{Récapitulatif des technologies utilisées}
+\end{table}
+
+\newpage
+
+% ==========================================
+% CHAPTER 2 : ASPECTS TECHNIQUES
+% ==========================================
+\chapter{Aspects Techniques}
+
+\section{Architecture globale}
+
+\subsection{Vue d'ensemble}
+
+L'architecture du projet suit le modèle \textbf{MVC (Modèle-Vue-Contrôleur)} de Laravel, enrichi par une couche de services spécialisés. Le cœur du système est le \textbf{NLQueryEngine} qui implémente un double pipeline de traitement des requêtes.
+
+\begin{figure}[h]
+\centering
+\begin{lstlisting}[language=,frame=none]
++------------------+     +---------------------+
+|  Utilisateur      |---->|  ChatbotController   |
+|  (Question NL)    |     |  POST /api/chatbot   |
++------------------+     +----------+----------+
+                                     |
+                            +--------v--------+
+                            |  NLQueryEngine   |
+                            |  +------------+  |
+                            |  | tryGemini() |  |
+                            |  +------------+  |
+                            |  | (fallback)  |  |
+                            |  +------------+  |
+                            |  | askLocally() | |
+                            |  +------------+  |
+                            +--------+---------+
+                                     |
+                            +--------v--------+
+                            |     Base de      |
+                            |     données      |
+                            |     (MySQL)      |
+                            +-----------------+
+\end{lstlisting}
+\caption{Architecture simplifiée du système}
+\end{figure}
+
+\subsection{Double pipeline}
+
+Le \textbf{NLQueryEngine} implémente une stratégie de double pipeline :
+
+\begin{enumerate}
+    \item \textbf{Pipeline Gemini (primaire)} :
+    \begin{itemize}
+        \item Construit un prompt contenant le schéma complet de la base de données.
+        \item Envoie la requête à Google Gemini 2.5 Flash.
+        \item Gemini retourne une structure JSON contenant la requête SQL, l'intention et la réponse formatée.
+        \item Le moteur exécute la requête et retourne les résultats.
+    \end{itemize}
+    \item \textbf{Pipeline local (fallback)} :
+    \begin{itemize}
+        \item Extrait l'année de la question par expressions régulières.
+        \item Résout les entités (joueurs, équipes) par Fuzzy Matching (n-grammes).
+        \item Détecte l'intention par mots-clés (comparaison, championnat, statistiques, etc.).
+        \item Construit la requête SQL via des méthodes spécialisées.
+        \item Exécute et formate la réponse en tableau Markdown.
+    \end{itemize}
+\end{enumerate}
+
+\section{Base de données}
+
+\subsection{Schéma relationnel}
+
+La base de données \textbf{stat\_muse} (MySQL) contient 22 tables. Les tables principales sont :
+
+\begin{itemize}
+    \item \textbf{players} (1 718 enregistrements) : Informations biographiques des joueurs (nom, taille, poids, position, draft).
+    \item \textbf{teams} (34 enregistrements) : Équipes NBA (nom, ville, abréviation, conférence).
+    \item \textbf{seasons} : Saisons NBA (année, label, dates).
+    \item \textbf{player\_season\_stats} (8 176 enregistrements) : Statistiques cumulées par joueur et par saison (points, rebonds, passes, pourcentages).
+    \item \textbf{games} (13 605 enregistrements) : Matchs NBA (date, scores, équipes).
+    \item \textbf{game\_player\_stats} : Statistiques détaillées par match et par joueur.
+    \item \textbf{championships} : Historique des championnats (31 titres enregistrés).
+    \item \textbf{awards / player\_awards} : Récompenses individuelles (MVP, DPOY, ROY, etc.).
+\end{itemize}
+
+\subsection{Sources de données}
+
+Les données proviennent de trois sources principales :
+\begin{enumerate}
+    \item \textbf{API data.nba.com} : 13 605 matchs (saisons 2015 à 2024).
+    \item \textbf{Fichiers CSV} : 1 718 joueurs, 34 équipes.
+    \item \textbf{Fichiers JSON} : 24 entrées de corpus pour les connaissances générales.
+\end{enumerate}
+
+\section{Implémentation}
+
+\subsection{Organisation du code}
+
+Le projet est organisé selon les conventions Laravel avec une couche de services métier :
+
+\begin{itemize}
+    \item \textbf{app/Services/} : 10 services spécialisés.
+    \item \textbf{app/Http/Controllers/} : 12 contrôleurs.
+    \item \textbf{app/Models/} : 15 modèles Eloquent.
+    \item \textbf{resources/views/} : 45 templates Blade.
+    \item \textbf{basket-insights/src/} : 65 fichiers sources React/TypeScript.
+\end{itemize}
+
+\subsection{Services clés}
+
+\begin{table}[h]
+\centering
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Service} & \textbf{Rôle} \\
+\midrule
+GeminiService & Wrapper HTTP pour l'API Gemini 2.5 Flash \\
+NLQueryEngine & Moteur de requêtes principal (double pipeline) \\
+PlayerProfileService & Génération de profils de joueurs (archétype, scoutisme) \\
+DataIngestionService & Import de données depuis API/CDN/CSV \\
+QueryUnderstandingService & Classification d'intention et extraction d'entités \\
+ResponseFormatterService & Formatage des réponses en langage naturel \\
+NbaApiService & Client pour l'API data.nba.com \\
+\bottomrule
+\end{tabularx}
+\caption{Services métier du projet}
+\end{table}
+
+\subsection{Frontend double}
+
+Le projet propose deux interfaces utilisateur :
+
+\begin{enumerate}
+    \item \textbf{Blade + Alpine.js} : Interface Laravel traditionnelle avec des composants dynamiques en Alpine.js. La page de comparaison permet de sélectionner deux joueurs via un autocomplétion et d'afficher leurs profils côte à côte.
+    \item \textbf{React + TanStack Start} : Application moderne avec React 19, TypeScript, et TanStack Router. Cette SPA (Single Page Application) offre une expérience plus réactive avec des graphiques (Recharts) et une interface utilisateur avancée (Radix UI).
+\end{enumerate}
+
+\subsection{Sécurité}
+
+Plusieurs couches de sécurité sont implémentées :
+
+\begin{itemize}
+    \item \textbf{White-listing des tables} : Seules 18 tables autorisées peuvent être interrogées.
+    \item \textbf{Validation des expressions} : Les expressions SQL sont validées par expression régulière.
+    \item \textbf{Protection contre les injections SQL} : Utilisation d'Eloquent Query Builder avec paramètres bindés.
+    \item \textbf{Limitation des résultats} : Maximum 100 lignes retournées par requête.
+    \item \textbf{Limitation des fonctions d'agrégation} : Seules 8 fonctions autorisées (SUM, AVG, COUNT, etc.).
+\end{itemize}
+
+\section{Chatbot IA}
+
+\subsection{Intégration de Gemini}
+
+Le projet utilise \textbf{Google Gemini 2.5 Flash} comme moteur d'intelligence artificielle. L'intégration se fait via :
+
+\begin{itemize}
+    \item \textbf{API REST} : Appels HTTP POST à \url{https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent}
+    \item \textbf{Clé API} : Authentification via clé API stockée dans les fichiers de configuration Laravel.
+    \item \textbf{Timeout} : 30 secondes avec 1 tentative de réessai (délai de 1 seconde).
+\end{itemize}
+
+\subsection{Prompt Engineering}
+
+Le prompt système envoyé à Gemini est structuré comme suit :
+
+\begin{lstlisting}[language=,caption=Structure du prompt Gemini (simplifié)]
+You are an NBA analyst with full SQL read access.
+Given a user's question, determine what data to retrieve
+and return a structured query and a natural-language answer.
+
+[DATABASE SCHEMA - tables, columns, relationships]
+
+USER QUESTION: {question}
+
+Respond with ONLY valid JSON: {
+  "intent": "...",
+  "entities": { players, teams, season, metrics },
+  "explanation": "...",
+  "query": {
+    "from": "...",
+    "joins": [...],
+    "columns": [...],
+    "where": [...],
+    "order_by": [...],
+    "group_by": [...],
+    "limit": 10
+  },
+  "answer": "..."
+}
+\end{lstlisting}
+
+\subsection{Exemple de flux}
+
+Voici le flux complet pour une question typique :
+
+\begin{enumerate}
+    \item L'utilisateur saisit : \textit{« Compare Michael Jordan and LeBron James »}
+    \item Le \texttt{ChatbotController} reçoit la requête et appelle \texttt{NLQueryEngine::ask()}.
+    \item Le moteur tente d'abord Gemini. Si Gemini répond, il exécute la requête SQL générée.
+    \item En cas d'échec de Gemini, le pipeline local entre en jeu :
+    \begin{itemize}
+        \item Détection de l'intention \texttt{comparison} (2 joueurs détectés).
+        \item Construction de la requête SQL interrogeant \texttt{player\_season\_stats}.
+        \item Exécution et formatage des résultats.
+    \end{itemize}
+    \item La réponse est retournée au frontend sous forme de JSON structuré.
+\end{enumerate}
+
+\subsection{Profils de joueurs enrichis}
+
+Le \textbf{PlayerProfileService} analyse les statistiques de carrière d'un joueur pour générer :
+
+\begin{itemize}
+    \item \textbf{Archétype} : Classification automatique basée sur 12 profils prédéfinis (Scoreur principal, Meneur playmaker, Ailier 3-and-D, etc.).
+    \item \textbf{Forces et faiblesses} : Identification automatique basée sur les statistiques (points, passes, rebonds, pourcentages).
+    \item \textbf{Rapport de scoutisme} : Description textuelle générée dynamiquement.
+    \item \textbf{Saison pic} : Identification de la meilleure saison statistique.
+    \item \textbf{Métriques avancées} : Score d'utilisation, score d'efficacité, statistiques par 36 minutes.
+\end{itemize}
+
+\section{Tests}
+
+\subsection{Stratégie de test}
+
+Le projet utilise \textbf{PHPUnit 11} avec Mockery pour les tests unitaires et fonctionnels. La base de données SQLite en mémoire est utilisée pour isoler les tests. Les appels à l'API Gemini sont systématiquement mockés.
+
+\subsection{Couverture}
+
+46 tests sont répartis comme suit :
+
+\begin{table}[h]
+\centering
+\begin{tabularx}{\textwidth}{lXr}
+\toprule
+\textbf{Catégorie} & \textbf{Description} & \textbf{Nombre} \\
+\midrule
+Unitaires (Modèles) & Tests des modèles Eloquent & 9 \\
+Unitaires (Services) & Tests des services métier (QueryUnderstanding, ResponseFormatter, etc.) & 12 \\
+Fonctionnels (Chatbot) & Tests de l'API chatbot (validation, formats de réponse) & 5 \\
+Fonctionnels (Auth) & Tests d'authentification Laravel Breeze & 20 \\
+\bottomrule
+\end{tabularx}
+\caption{Répartition des tests automatisés}
+\end{table}
+
+\subsection{Exemple de test}
+
+\begin{lstlisting}[language=PHP,caption=Test unitaire du QueryUnderstandingService]
+public function test_detects_comparison_intent()
+{
+    $service = new QueryUnderstandingService($this->gemini);
+    
+    $result = $service->understand('Compare Michael Jordan and LeBron James');
+    
+    $this->assertEquals('comparison_query', $result['intent']);
+    $this->assertNotEmpty($result['entities']);
+}
+\end{lstlisting}
+
+\section{Défis et solutions}
+
+\subsection{Défis techniques}
+
+\begin{enumerate}
+    \item \textbf{Disponibilité de l'API Gemini} : L'API Gemini peut être temporairement indisponible ou lente. \textbf{Solution :} Implémentation d'un double pipeline avec fallback local complet.
+    \item \textbf{Volumétrie des données} : 13 605 matchs et 8 176 statistiques saisonnières. \textbf{Solution :} Indexation optimisée des colonnes les plus interrogées (player\_id, points, saison).
+    \item \textbf{Compréhension du langage naturel} : Les utilisateurs peuvent formuler des questions de différentes manières. \textbf{Solution :} Fuzzy matching par n-grammes pour la résolution d'entités, avec détection d'intention par mots-clés.
+    \item \textbf{Sécurité des requêtes SQL générées par l'IA} : Une IA peut générer des requêtes malveillantes ou invalides. \textbf{Solution :} Système de white-listing à plusieurs niveaux (tables, colonnes, fonctions).
+\end{enumerate}
+
+\section{Conclusion et perspectives}
+
+\subsection{Bilan}
+
+Le projet \textbf{NBA Query Engine} a atteint ses objectifs principaux :
+\begin{itemize}
+    \item Un moteur de requêtes en langage naturel fonctionnel avec double pipeline (Gemini + local).
+    \item Une interface de comparaison de joueurs enrichie avec profils contextuels.
+    \item Une base de données complète couvrant 31 ans d'histoire NBA.
+    \item Deux frontends (Blade et React) offrant une expérience utilisateur moderne.
+\end{itemize}
+
+\subsection{Perspectives d'amélioration}
+
+Plusieurs pistes d'amélioration sont envisagées :
+
+\begin{enumerate}
+    \item \textbf{Intégration de données temps réel} : Connexion à l'API live de la NBA pour les statistiques en cours de saison.
+    \item \textbf{Support de requêtes plus complexes} : Requêtes avec sous-requêtes, expressions conditionnelles avancées.
+    \item \textbf{Graphiques et visualisations} : Génération automatique de graphiques à partir des résultats de requêtes.
+    \item \textbf{Authentification sociale} : Connexion via Google, GitHub pour une expérience utilisateur simplifiée.
+    \item \textbf{CI/CD et déploiement} : Mise en place d'une pipeline d'intégration continue (GitHub Actions) et déploiement automatisé.
+    \item \textbf{Tests frontend} : Ajout de tests unitaires et d'intégration pour l'application React.
+\end{enumerate}
+
+\vspace{2cm}
+
+\begin{center}
+\rule{0.5\textwidth}{0.4pt}\\[0.5cm]
+\textit{« Le basket-ball est le plus beau sport du monde, et ses données racontent des histoires fascinantes. »}
+\end{center}
+
+\end{document}

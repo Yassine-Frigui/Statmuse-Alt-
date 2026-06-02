@@ -29,12 +29,8 @@
                     </span>
                 </a>
                 <div class="hidden md:flex gap-6 text-sm font-medium">
-                    <a href="{{ route('players.index') }}" class="hover:text-white transition-colors {{ request()->routeIs('players.*') ? 'text-white' : 'text-data-slate' }}">Players</a>
-                    <a href="{{ route('teams.index') }}" class="hover:text-white transition-colors {{ request()->routeIs('teams.*') ? 'text-white' : 'text-data-slate' }}">Teams</a>
-                    <a href="{{ route('seasons.index') }}" class="hover:text-white transition-colors {{ request()->routeIs('seasons.*') ? 'text-white' : 'text-data-slate' }}">Seasons</a>
-                    <a href="{{ route('championships.index') }}" class="hover:text-white transition-colors {{ request()->routeIs('championships.*') ? 'text-white' : 'text-data-slate' }}">Championships</a>
-                    <a href="{{ route('corpus.index') }}" class="hover:text-white transition-colors {{ request()->routeIs('corpus.*') ? 'text-white' : 'text-data-slate' }}">Corpus</a>
                     <a href="{{ route('scenarios.index') }}" class="hover:text-white transition-colors {{ request()->routeIs('scenarios.*') ? 'text-white' : 'text-data-slate' }}">Scenarios</a>
+                    <a href="{{ route('compare.index') }}" class="hover:text-white transition-colors {{ request()->routeIs('compare.*') ? 'text-white' : 'text-data-slate' }}">Compare</a>
                 </div>
             </div>
             <div class="flex items-center gap-4">
