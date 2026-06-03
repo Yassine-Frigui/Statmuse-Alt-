@@ -9,6 +9,8 @@ class PlayerAward extends Model
 {
     use HasFactory;
 
+    protected $table = 'nba_player_awards';
+
     protected $fillable = ['player_id', 'award_id', 'season_id'];
 
     public function player()

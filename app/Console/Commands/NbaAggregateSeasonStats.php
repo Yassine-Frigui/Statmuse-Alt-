@@ -12,7 +12,7 @@ class NbaAggregateSeasonStats extends Command
         {--season= : Season year to aggregate}
         {--all : Aggregate all seasons}';
 
-    protected $description = 'Rebuild player_season_stats from game_player_stats';
+    protected $description = 'Rebuild nba_player_season_stats from nba_game_player_stats';
 
     public function handle(): int
     {
@@ -41,31 +41,31 @@ class NbaAggregateSeasonStats extends Command
             return;
         }
 
-        DB::table('player_season_stats')->where('season_id', $season->id)->delete();
+        DB::table('nba_player_season_stats')->where('season_id', $season->id)->delete();
 
-        $rows = DB::table('game_player_stats')
-            ->join('games', 'game_player_stats.game_id', '=', 'games.id')
-            ->where('games.season_id', $season->id)
+        $rows = DB::table('nba_game_player_stats')
+            ->join('nba_games', 'nba_game_player_stats.game_id', '=', 'nba_games.id')
+            ->where('nba_games.season_id', $season->id)
             ->select(
-                'game_player_stats.player_id',
-                'game_player_stats.team_id',
+                'nba_game_player_stats.player_id',
+                'nba_game_player_stats.team_id',
                 DB::raw('COUNT(*) as games_played'),
-                DB::raw('SUM(game_player_stats.points) as points'),
-                DB::raw('SUM(game_player_stats.rebounds) as rebounds'),
-                DB::raw('SUM(game_player_stats.assists) as assists'),
-                DB::raw('SUM(game_player_stats.steals) as steals'),
-                DB::raw('SUM(game_player_stats.blocks) as blocks'),
-                DB::raw('SUM(game_player_stats.fgm) as fgm'),
-                DB::raw('SUM(game_player_stats.fga) as fga'),
-                DB::raw('SUM(game_player_stats.fg3m) as fg3m'),
-                DB::raw('SUM(game_player_stats.fg3a) as fg3a'),
-                DB::raw('SUM(game_player_stats.ftm) as ftm'),
-                DB::raw('SUM(game_player_stats.fta) as fta'),
-                DB::raw('SUM(game_player_stats.minutes) as minutes'),
-                DB::raw('SUM(game_player_stats.turnovers) as turnovers'),
-                DB::raw('SUM(game_player_stats.personal_fouls) as personal_fouls'),
+                DB::raw('SUM(nba_game_player_stats.points) as points'),
+                DB::raw('SUM(nba_game_player_stats.rebounds) as rebounds'),
+                DB::raw('SUM(nba_game_player_stats.assists) as assists'),
+                DB::raw('SUM(nba_game_player_stats.steals) as steals'),
+                DB::raw('SUM(nba_game_player_stats.blocks) as blocks'),
+                DB::raw('SUM(nba_game_player_stats.fgm) as fgm'),
+                DB::raw('SUM(nba_game_player_stats.fga) as fga'),
+                DB::raw('SUM(nba_game_player_stats.fg3m) as fg3m'),
+                DB::raw('SUM(nba_game_player_stats.fg3a) as fg3a'),
+                DB::raw('SUM(nba_game_player_stats.ftm) as ftm'),
+                DB::raw('SUM(nba_game_player_stats.fta) as fta'),
+                DB::raw('SUM(nba_game_player_stats.minutes) as minutes'),
+                DB::raw('SUM(nba_game_player_stats.turnovers) as turnovers'),
+                DB::raw('SUM(nba_game_player_stats.personal_fouls) as personal_fouls'),
             )
-            ->groupBy('game_player_stats.player_id', 'game_player_stats.team_id')
+            ->groupBy('nba_game_player_stats.player_id', 'nba_game_player_stats.team_id')
             ->get();
 
         $insertData = [];
@@ -89,7 +89,7 @@ class NbaAggregateSeasonStats extends Command
             ];
         }
 
-        DB::table('player_season_stats')->insert($insertData);
+        DB::table('nba_player_season_stats')->insert($insertData);
 
         $this->line("  Inserted " . count($insertData) . " season stat rows.");
     }

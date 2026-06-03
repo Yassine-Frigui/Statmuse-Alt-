@@ -9,15 +9,25 @@
     <div class="mt-4 bg-court-dark border border-white/5 rounded-2xl overflow-hidden">
         <div class="px-8 py-6 border-b border-white/5">
             <h1 class="font-display text-3xl font-black uppercase tracking-tight">New Scenario</h1>
-            <p class="text-data-slate text-sm mt-1">Create an alternate-reality NBA stat comparison</p>
+            <p class="text-data-slate text-sm mt-1">Create an alternate-reality sports stat comparison</p>
         </div>
         <form method="POST" action="{{ route('scenarios.store') }}" class="px-8 py-6 space-y-6">
             @csrf
 
-            <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-data-slate mb-2">Name</label>
-                <input type="text" name="name" value="{{ old('name') }}" required maxlength="255" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm outline-none focus:border-hoop-orange/50 transition-colors" placeholder="e.g., Jordan's career with modern pace">
-                @error('name') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-data-slate mb-2">Name</label>
+                    <input type="text" name="name" value="{{ old('name') }}" required maxlength="255" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm outline-none focus:border-hoop-orange/50 transition-colors" placeholder="e.g., Jordan's career with modern pace">
+                    @error('name') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+                <div class="w-32">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-data-slate mb-2">Sport</label>
+                    <select name="sport" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm outline-none focus:border-hoop-orange/50 transition-colors">
+                        <option value="nba" {{ old('sport', 'nba') === 'nba' ? 'selected' : '' }}>NBA</option>
+                        <option value="champions" {{ old('sport') === 'champions' ? 'selected' : '' }}>Champions League</option>
+                    </select>
+                    @error('sport') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
             </div>
 
             <div>

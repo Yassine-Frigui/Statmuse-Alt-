@@ -1,11 +1,11 @@
 @extends('layouts.nba')
 
-@section('title', 'Natural Language Basketball Query')
+@section('title', 'Sports Query')
 
 @push('head')
-    <meta name="description" content="Ask any basketball question in plain English. Powered by Gemini + Laravel + MySQL.">
-    <meta property="og:title" content="Engine.NBA — NBA Query Engine">
-    <meta property="og:description" content="Natural-language access to four decades of NBA stats and history.">
+    <meta name="description" content="Ask any sports question in plain English. Powered by AI + Laravel + MySQL.">
+    <meta property="og:title" content="Stat Engine">
+    <meta property="og:description" content="Natural-language access to sports stats and history.">
 @endpush
 
 @section('content')
@@ -13,10 +13,10 @@
     <main class="max-w-5xl mx-auto px-6 py-12 pb-24">
         <header class="mb-8">
             <h1 class="font-display italic font-black text-5xl md:text-6xl uppercase tracking-tight leading-none">
-                Court <span class="text-hoop-orange">Intelligence</span>
+                Sports <span class="text-hoop-orange">Intelligence</span>
             </h1>
             <p class="text-data-slate mt-3 max-w-2xl">
-                Natural-language access to four decades of NBA box scores, championships, awards, and history. Powered by Gemini + Laravel.
+                Natural-language access to sports stats, match results, and history. Powered by AI + Laravel.
             </p>
         </header>
 
@@ -35,7 +35,7 @@
                         maxlength="500"
                         :disabled="loading"
                         class="bg-transparent border-none outline-none w-full text-lg placeholder:text-data-slate/50 font-medium disabled:opacity-60"
-                        placeholder="Ask a basketball question (e.g. 'Compare Shaq and Hakeem in the 1995 Finals')"
+                        placeholder="Ask a sports question..."
                     />
                     <button
                         type="submit"
@@ -155,7 +155,7 @@
                         </template>
                     </div>
                     <div class="bg-white/5 border-t border-white/5 px-8 py-4 flex justify-between items-center">
-                        <span class="text-xs text-data-slate">Data source: data.nba.com CDN + Historical CSV</span>
+                        <span class="text-xs text-data-slate">Data source: Sports Database</span>
                         <template x-if="rows.length > 0">
                             <button @click="downloadCsv()" class="text-xs font-bold uppercase tracking-widest text-hoop-orange hover:underline">Download CSV</button>
                         </template>
@@ -308,13 +308,25 @@ document.addEventListener('alpine:init', () => {
 
         formatJson(obj) { try { return JSON.stringify(obj, null, 2); } catch(e) { return String(obj); } },
 
-        examples: [
-            'Top 10 scorers all-time',
-            'Who won the NBA championship in 1998?',
-            'Compare Michael Jordan and LeBron James rings',
-            'Lakers vs Celtics head to head 2023',
-            'List of MVP winners in the 2010s',
-        ],
+        get examples() {
+            const sport = Alpine.store('sport').current;
+            if (sport === 'nba') {
+                return [
+                    'Top 10 scorers all-time',
+                    'Who won the NBA championship in 2020?',
+                    'Compare Michael Jordan and LeBron James',
+                    'Lakers vs Celtics head to head',
+                    'Most efficient scorers in 2023',
+                ];
+            }
+            return [
+                'Top scoring teams in 2024',
+                'Who won the Champions League in 2023?',
+                'Barcelona vs Real Madrid head to head',
+                'Group A standings in 2022',
+                'Liverpool match results in 2023',
+            ];
+        },
 
         pipelineStages: [
             { key: 'analyzing', label: '1. Gemini Analysis', detail: 'Schema-aware query planning' },
@@ -361,10 +373,11 @@ document.addEventListener('alpine:init', () => {
 
             const start = performance.now();
             try {
+                const sport = Alpine.store('sport').current;
                 const res = await fetch('/api/chatbot', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify({ message: q }),
+                    body: JSON.stringify({ message: q, sport }),
                 });
                 if (!res.ok) {
                     const text = await res.text();

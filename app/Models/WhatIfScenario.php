@@ -14,6 +14,7 @@ class WhatIfScenario extends Model
         'user_id',
         'name',
         'description',
+        'sport',
         'base_query',
         'modifications',
         'result_data',

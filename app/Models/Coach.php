@@ -9,11 +9,13 @@ class Coach extends Model
 {
     use HasFactory;
 
+    protected $table = 'nba_coaches';
+
     protected $fillable = ['first_name', 'last_name'];
 
     public function teams()
     {
-        return $this->belongsToMany(Team::class, 'team_season_coach')
+        return $this->belongsToMany(Team::class, 'nba_team_season_coach')
             ->withPivot(['season_id', 'games', 'wins', 'losses']);
     }
 

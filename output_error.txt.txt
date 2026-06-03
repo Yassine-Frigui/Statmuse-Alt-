@@ -1,0 +1,26 @@
+QUERY PAGE: 
+prompted " best defensive season for a team that reached the finals " s
+
+Pipeline Failure
+Chatbot API error 500: {"reply":"Sorry, I encountered an error processing your question. Please try again.","error":"Table no
+t in schema allowlist: team_season_conceded","debug":{"sport":"champions","question":"best defensi
+
+
+COMPARE PAGE
+champions league compare between 2 teams generates : 
+
+Error
+API error 500: {"error":"SQLSTATE[HY093]: Invalid parameter number (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: stat_muse, SQL: \n SELECT\n COUNT(*) AS matches_played,\n
+
+
+
+SCENARIOS PAGE : 
+can't be ran , using middleware 
+
+
+
+
+
+
+
+ 

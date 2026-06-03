@@ -9,7 +9,7 @@ class PlayerSeasonStat extends Model
 {
     use HasFactory;
 
-    protected $table = 'player_season_stats';
+    protected $table = 'nba_player_season_stats';
 
     protected $fillable = [
         'player_id', 'team_id', 'season_id', 'games_played',

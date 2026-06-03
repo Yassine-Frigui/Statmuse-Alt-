@@ -1,0 +1,20 @@
+a21979c274c742bba1d2173d3a3a1180**AQ.
+
+
+Ab8RN6Km_s5riRNf2_hQbwM6amFidFtX8nWZ5mCC_Ak_jOoezQ
+
+
+
+curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=GCP_API_KEY_REMOVED" -H "Content-Type: application/json" -d "{\"contents\": [{\"parts\": [{\"text\": \"Explain the API in one sentence.\"}]}]}"
+
+
+
+
+
+
+
+curl https://api.groq.com/openai/v1/chat/completions -s -H "Content-Type: application/json" -H "Authorization: Bearer GROQ_API_KEY_REMOVED" -d '{ "model": "openai gpt-oss-120b", "messages": [{
+    "role": "user",
+    "content": "Please briefly explain the importance of fast AI inference."
+}]
+}'

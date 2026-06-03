@@ -9,6 +9,8 @@ class Season extends Model
 {
     use HasFactory;
 
+    protected $table = 'nba_seasons';
+
     protected $fillable = ['year', 'label', 'start_date', 'end_date'];
 
     public function playerSeasonStats()

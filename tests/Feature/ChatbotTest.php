@@ -2,12 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\Game;
-use App\Models\GamePlayerStat;
-use App\Models\Player;
-use App\Models\Season;
-use App\Models\Team;
+use App\Models\Conversation;
 use App\Models\User;
+use App\Services\Contracts\LLMProvider;
 use App\Services\GeminiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
@@ -21,31 +18,19 @@ class ChatbotTest extends TestCase
     {
         parent::setUp();
 
-        $geminiMock = Mockery::mock(GeminiService::class);
-        $geminiMock->shouldReceive('generateContent')
+        $llmMock = Mockery::mock(LLMProvider::class);
+        $llmMock->shouldReceive('generate')
             ->andReturn(json_encode([
-                'intent' => 'player_info',
-                'entities' => ['players' => ['Michael Jordan'], 'teams' => [], 'season' => null, 'metrics' => []],
-                'explanation' => 'Looking up player information',
-                'query' => [
-                    'from' => 'players',
-                    'joins' => [],
-                    'columns' => [
-                        ['expr' => 'players.first_name', 'alias' => 'first_name'],
-                        ['expr' => 'players.last_name', 'alias' => 'last_name'],
-                        ['expr' => 'players.position', 'alias' => 'position'],
-                    ],
-                    'where' => [['col' => 'players.last_name', 'op' => 'LIKE', 'val' => '%Jordan%']],
-                    'order_by' => [['expr' => 'players.last_name', 'dir' => 'ASC']],
-                    'group_by' => [],
-                    'limit' => 5,
-                ],
-                'answer' => 'Here are the players matching your search:',
+                'type' => 'query',
+                'sql' => "SELECT first_name, last_name, position
+FROM nba_players
+WHERE LOWER(last_name) LIKE '%jordan%'
+ORDER BY last_name ASC
+LIMIT 5;",
+                'reply' => 'Here are the players matching your search:',
             ]));
-        $geminiMock->shouldReceive('generateInsight')
-            ->andReturn(['content' => 'Deep insight.']);
 
-        $this->instance(GeminiService::class, $geminiMock);
+        $this->instance(LLMProvider::class, $llmMock);
     }
 
     public function test_guest_can_access_chatbot_api(): void
@@ -55,7 +40,7 @@ class ChatbotTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['reply', 'data']);
+            ->assertJsonStructure(['reply', 'data', 'sql']);
     }
 
     public function test_chatbot_validates_message_required(): void
@@ -76,6 +61,37 @@ class ChatbotTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['reply', 'data', 'conversation_id']);
+            ->assertJsonStructure(['reply', 'data', 'sql', 'conversation_id']);
+    }
+
+    public function test_sport_parameter_is_accepted(): void
+    {
+        $response = $this->postJson('/api/chatbot', [
+            'message' => 'Who is Michael Jordan?',
+            'sport' => 'nba',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure(['reply', 'data', 'sql']);
+    }
+
+    public function test_unanswerable_question_returns_friendly_message(): void
+    {
+        $llmMock = Mockery::mock(LLMProvider::class);
+        $llmMock->shouldReceive('generate')
+            ->andReturn(json_encode([
+                'type' => 'unanswerable',
+                'reply' => "I don't have data for that. Our database covers seasons 2015–2024.",
+            ]));
+
+        $this->instance(LLMProvider::class, $llmMock);
+
+        $response = $this->postJson('/api/chatbot', [
+            'message' => '1980 best scorers',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonFragment(['reply' => "I don't have data for that. Our database covers seasons 2015–2024."])
+            ->assertJsonMissing(['sql']);
     }
 }

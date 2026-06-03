@@ -1,0 +1,20 @@
+##SUGGESTED PIPELINE  
+
+-- We need to simplify the query generation . Currently it's somewhat over engineered . 
+I suggest to add the following elements as context for the llm : 
+
+-the schema of the tables ( nba engine has the right to nba_tables and same thing for champions league ) 
+-the relationships between them 
+
+
+why there are relevant ? let's take an example of creating the highest scorer in a given year, 
+we perform a sql query that calculates max (sum of points) for all the players in the specified time frame
+( example best scorers in the 2020's means it starts from 2020 january until the end ) . 
+
+
+from what I understood from the current engine , it's doing intent classification and aggregate selection ,etc . 
+this is stuff that should be handled by a proper Machine Learning NLP pipeline ( that will be probably handled in the future
+currently let's leave reasoning for the llm )
+ , we need to eliminate any classification in the services , 
+we just let all and every bit of reasoning up to the ai model 
+  

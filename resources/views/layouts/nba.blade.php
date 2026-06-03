@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@hasSection('title')@yield('title') | @endif Engine.NBA</title>
-    <meta name="description" content="Natural-language NBA query engine.">
+    <title>@hasSection('title')@yield('title') | @endif Stat Engine</title>
+    <meta name="description" content="Natural-language sports query engine.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
@@ -17,25 +17,28 @@
 </head>
 <body class="font-sans antialiased bg-court-black text-white">
     {{-- SiteHeader --}}
-    <nav class="border-b border-white/5 bg-court-dark/50 backdrop-blur-md sticky top-0 z-50">
+    <nav class="border-b border-white/5 bg-court-dark/50 backdrop-blur-md sticky top-0 z-50" x-data="sportNav()">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-8">
+            <div class="flex items-center gap-6">
                 <a href="/chatbot" class="flex items-center gap-2">
                     <div class="size-8 bg-hoop-orange rounded flex items-center justify-center font-display font-black text-xl italic text-white shadow-[0_0_20px_rgba(255,93,34,0.3)]">
                         E
                     </div>
                     <span class="font-display text-xl font-bold tracking-tight uppercase italic">
-                        Engine<span class="text-hoop-orange">.NBA</span>
+                        Stat Engine
                     </span>
                 </a>
                 <div class="hidden md:flex gap-6 text-sm font-medium">
+                    <a href="{{ route('chatbot.index') }}" class="hover:text-white transition-colors {{ request()->routeIs('chatbot.index') ? 'text-white' : 'text-data-slate' }}">Query</a>
                     <a href="{{ route('scenarios.index') }}" class="hover:text-white transition-colors {{ request()->routeIs('scenarios.*') ? 'text-white' : 'text-data-slate' }}">Scenarios</a>
                     <a href="{{ route('compare.index') }}" class="hover:text-white transition-colors {{ request()->routeIs('compare.*') ? 'text-white' : 'text-data-slate' }}">Compare</a>
                 </div>
             </div>
-            <div class="flex items-center gap-4">
-                <div class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold tracking-widest uppercase text-hoop-orange">
-                    Live Node: Gemini-Pro
+            <div class="flex items-center gap-3">
+                {{-- Sport Toggler --}}
+                <div class="flex bg-white/5 border border-white/10 rounded-lg overflow-hidden text-[11px] font-bold">
+                    <button @click="setSport('nba')" class="px-3 py-1.5 transition-colors" :class="sport === 'nba' ? 'bg-hoop-orange text-white' : 'text-data-slate hover:text-white'">NBA</button>
+                    <button @click="setSport('champions')" class="px-3 py-1.5 transition-colors" :class="sport === 'champions' ? 'bg-hoop-orange text-white' : 'text-data-slate hover:text-white'">UCL</button>
                 </div>
                 @auth
                     <div class="relative" x-data="{ open: false }">
@@ -95,6 +98,16 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
+            Alpine.store('sport', {
+                current: localStorage.getItem('sport') || 'nba',
+                set(val) { this.current = val; localStorage.setItem('sport', val); }
+            });
+
+            Alpine.data('sportNav', () => ({
+                get sport() { return Alpine.store('sport').current; },
+                setSport(val) { Alpine.store('sport').set(val); }
+            }));
+
             Alpine.data('chatbotFab', () => ({
                 open: false,
                 loading: false,
@@ -107,10 +120,11 @@
                     this.fabResult = null;
                     this.fabError = null;
                     try {
+                        const sport = Alpine.store('sport').current;
                         const res = await fetch('/api/chatbot', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                            body: JSON.stringify({ message: trimmed })
+                            body: JSON.stringify({ message: trimmed, sport })
                         });
                         if (!res.ok) throw new Error('API error ' + res.status);
                         const data = await res.json();

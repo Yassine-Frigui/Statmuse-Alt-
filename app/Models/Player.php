@@ -9,6 +9,8 @@ class Player extends Model
 {
     use HasFactory;
 
+    protected $table = 'nba_players';
+
     protected $fillable = [
         'nba_api_id', 'first_name', 'last_name', 'position', 'height', 'weight',
         'birth_date', 'college', 'drafted_year', 'bio',
@@ -31,15 +33,15 @@ class Player extends Model
 
     public function scopeTopScorers($query, ?int $seasonId = null, int $limit = 10)
     {
-        $query = $query->select('players.*')
-            ->selectRaw('COALESCE(SUM(player_season_stats.points), 0) as total_points')
-            ->join('player_season_stats', 'players.id', '=', 'player_season_stats.player_id');
+        $query = $query->select('nba_players.*')
+            ->selectRaw('COALESCE(SUM(nba_player_season_stats.points), 0) as total_points')
+            ->join('nba_player_season_stats', 'nba_players.id', '=', 'nba_player_season_stats.player_id');
 
         if ($seasonId) {
-            $query->where('player_season_stats.season_id', $seasonId);
+            $query->where('nba_player_season_stats.season_id', $seasonId);
         }
 
-        return $query->groupBy('players.id')
+        return $query->groupBy('nba_players.id')
             ->orderByDesc('total_points')
             ->limit($limit);
     }

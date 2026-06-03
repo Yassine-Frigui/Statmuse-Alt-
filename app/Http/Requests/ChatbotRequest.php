@@ -15,13 +15,14 @@ class ChatbotRequest extends FormRequest
     {
         return [
             'message' => ['required', 'string', 'max:500'],
+            'sport' => ['sometimes', 'string', 'max:50'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'message.required' => 'Please enter a question about the NBA.',
+            'message.required' => 'Please enter a question.',
             'message.max' => 'Question is too long (max 500 characters).',
         ];
     }

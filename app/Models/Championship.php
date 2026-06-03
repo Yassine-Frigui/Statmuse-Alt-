@@ -9,6 +9,8 @@ class Championship extends Model
 {
     use HasFactory;
 
+    protected $table = 'nba_championships';
+
     protected $fillable = [
         'season_id', 'champion_team_id', 'runner_up_team_id',
         'mvp_player_id', 'result_label',

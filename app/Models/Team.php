@@ -9,6 +9,8 @@ class Team extends Model
 {
     use HasFactory;
 
+    protected $table = 'nba_teams';
+
     protected $fillable = [
         'name', 'city', 'abbreviation', 'conference', 'division',
         'arena', 'founded_year', 'is_active',

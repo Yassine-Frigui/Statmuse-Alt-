@@ -9,6 +9,8 @@ class CorpusEntry extends Model
 {
     use HasFactory;
 
+    protected $table = 'nba_corpus_entries';
+
     protected $fillable = ['title', 'content', 'category', 'tags', 'source'];
 
     protected function casts(): array

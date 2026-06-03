@@ -9,6 +9,8 @@ class Game extends Model
 {
     use HasFactory;
 
+    protected $table = 'nba_games';
+
     protected $fillable = [
         'api_game_id', 'date', 'home_team_id', 'away_team_id',
         'home_score', 'away_score', 'season_id', 'stage',

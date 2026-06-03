@@ -11,6 +11,6 @@ class ComparePageTest extends TestCase
         $response = $this->get('/compare');
 
         $response->assertStatus(200);
-        $response->assertSeeText('Player Matchup');
+        $response->assertSeeText('Head-to-Head');
     }
 }

@@ -11,7 +11,7 @@
             <div class="flex items-start justify-between">
                 <div>
                     <h1 class="font-display text-3xl font-black uppercase tracking-tight">{{ $scenario->name }}</h1>
-                    <p class="text-data-slate text-sm mt-1">by {{ $scenario->user?->name ?? 'Anonymous' }} · {{ $scenario->created_at->format('M j, Y') }}</p>
+                    <p class="text-data-slate text-sm mt-1">by {{ $scenario->user?->name ?? 'Anonymous' }} · {{ $scenario->created_at->format('M j, Y') }} @if($scenario->sport) · <span class="uppercase font-bold">{{ $scenario->sport === 'champions' ? 'UCL' : 'NBA' }}</span>@endif</p>
                 </div>
                 @if(auth()->check() && auth()->id() === $scenario->user_id)
                     <div class="flex gap-2">

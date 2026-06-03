@@ -17,8 +17,14 @@ class ScenarioController extends Controller
         $query = WhatIfScenario::with('user');
 
         if ($search = $request->get('q')) {
-            $query->where('name', 'like', "%{$search}%")
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
                   ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        if ($sport = $request->get('sport')) {
+            $query->where('sport', $sport);
         }
 
         if ($request->user() && $request->get('mine')) {
@@ -41,6 +47,7 @@ class ScenarioController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
+            'sport' => 'nullable|string|in:nba,champions',
             'base_query' => 'required|string',
             'modifications' => 'nullable|json',
             'is_public' => 'boolean',
@@ -48,6 +55,7 @@ class ScenarioController extends Controller
 
         $data['user_id'] = $request->user()->id;
         $data['is_public'] = $data['is_public'] ?? false;
+        $data['sport'] = $data['sport'] ?? 'nba';
 
         $scenario = WhatIfScenario::create($data);
         return redirect()->route('scenarios.show', $scenario);
@@ -79,11 +87,13 @@ class ScenarioController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
+            'sport' => 'nullable|string|in:nba,champions',
             'base_query' => 'required|string',
             'modifications' => 'nullable|json',
             'is_public' => 'boolean',
         ]);
 
+        $data['sport'] = $data['sport'] ?? 'nba';
         $scenario->update($data);
         return redirect()->route('scenarios.show', $scenario);
     }

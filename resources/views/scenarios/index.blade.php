@@ -7,7 +7,7 @@
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
         <div>
             <h1 class="font-display italic font-black text-4xl md:text-5xl uppercase tracking-tight">What-If Scenarios</h1>
-            <p class="text-data-slate mt-2">Alternate-reality NBA stats and comparisons</p>
+            <p class="text-data-slate mt-2">Alternate-reality sports stats and comparisons</p>
         </div>
         <div class="flex gap-2">
             @auth
@@ -28,11 +28,16 @@
         @forelse($scenarios as $scenario)
             <a href="{{ route('scenarios.show', $scenario) }}" class="bg-court-dark border border-white/5 rounded-xl p-5 hover:border-hoop-orange/30 transition-all group">
                 <div class="flex items-start justify-between">
-                    <h3 class="font-display text-lg font-bold uppercase tracking-tight group-hover:text-hoop-orange transition-colors">{{ $scenario->name }}</h3>
+                    <div class="flex items-center gap-2 min-w-0">
+                        <h3 class="font-display text-lg font-bold uppercase tracking-tight group-hover:text-hoop-orange transition-colors truncate">{{ $scenario->name }}</h3>
+                        @if($scenario->sport)
+                            <span class="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[9px] text-data-slate font-medium uppercase shrink-0">{{ $scenario->sport === 'champions' ? 'UCL' : 'NBA' }}</span>
+                        @endif
+                    </div>
                     @if($scenario->is_public)
-                        <span class="px-2 py-1 bg-green-500/10 border border-green-500/20 rounded text-[10px] text-green-400 font-medium">Public</span>
+                        <span class="px-2 py-1 bg-green-500/10 border border-green-500/20 rounded text-[10px] text-green-400 font-medium shrink-0">Public</span>
                     @else
-                        <span class="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-data-slate font-medium">Private</span>
+                        <span class="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-data-slate font-medium shrink-0">Private</span>
                     @endif
                 </div>
                 @if($scenario->description)

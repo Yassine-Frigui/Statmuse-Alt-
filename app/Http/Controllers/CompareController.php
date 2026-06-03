@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Services\PlayerProfileService;
+use App\Services\TeamProfileService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CompareController extends Controller
 {
     public function __construct(
-        private PlayerProfileService $profileService
+        private PlayerProfileService $profileService,
+        private TeamProfileService $teamProfileService,
     ) {}
 
     public function index()
@@ -18,6 +21,17 @@ class CompareController extends Controller
     }
 
     public function compare(Request $request): JsonResponse
+    {
+        $sport = $request->input('sport', 'nba');
+
+        if ($sport === 'champions') {
+            return $this->compareTeams($request);
+        }
+
+        return $this->comparePlayers($request);
+    }
+
+    private function comparePlayers(Request $request): JsonResponse
     {
         $request->validate([
             'player_a_id' => 'required|integer|exists:players,id',
@@ -28,19 +42,49 @@ class CompareController extends Controller
             $profileA = $this->profileService->generateProfile((int) $request->player_a_id);
             $profileB = $this->profileService->generateProfile((int) $request->player_b_id);
 
-            $comparison = $this->buildComparison($profileA, $profileB);
+            $comparison = $this->buildPlayerComparison($profileA, $profileB);
 
             return response()->json([
                 'player_a' => $profileA,
                 'player_b' => $profileB,
                 'comparison' => $comparison,
+                'sport' => 'nba',
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    private function buildComparison(array $a, array $b): array
+    private function compareTeams(Request $request): JsonResponse
+    {
+        $request->validate([
+            'player_a_id' => 'required|integer|exists:cl_teams,id',
+            'player_b_id' => 'required|integer|exists:cl_teams,id',
+        ]);
+
+        try {
+            $teamAId = (int) $request->player_a_id;
+            $teamBId = (int) $request->player_b_id;
+
+            $profileA = $this->teamProfileService->generateProfile($teamAId);
+            $profileB = $this->teamProfileService->generateProfile($teamBId);
+
+            $headToHead = $this->teamProfileService->headToHead($teamAId, $teamBId);
+            $comparison = $this->buildTeamComparison($profileA, $profileB);
+
+            return response()->json([
+                'player_a' => $profileA,
+                'player_b' => $profileB,
+                'head_to_head' => $headToHead,
+                'comparison' => $comparison,
+                'sport' => 'champions',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    private function buildPlayerComparison(array $a, array $b): array
     {
         $aStats = $a['per_game_averages'];
         $bStats = $b['per_game_averages'];
@@ -87,6 +131,53 @@ class CompareController extends Controller
             }
         }
 
+        if ($aWins > $bWins) $winner = 'a';
+        elseif ($bWins > $aWins) $winner = 'b';
+
+        return [
+            'categories' => $categories,
+            'winner' => $winner,
+            'aWins' => $aWins,
+            'bWins' => $bWins,
+        ];
+    }
+
+    private function buildTeamComparison(array $a, array $b): array
+    {
+        $aStats = $a['stats'];
+        $bStats = $b['stats'];
+
+        $aWins = 0;
+        $bWins = 0;
+
+        $compare = function ($aVal, $bVal, $higherBetter = true) use (&$aWins, &$bWins) {
+            if ($aVal === null || $bVal === null) return null;
+            if ($higherBetter) {
+                if ($aVal > $bVal) { $aWins++; return 'a'; }
+                if ($bVal > $aVal) { $bWins++; return 'b'; }
+            } else {
+                if ($aVal < $bVal) { $aWins++; return 'a'; }
+                if ($bVal < $aVal) { $bWins++; return 'b'; }
+            }
+            return null;
+        };
+
+        $categories = [
+            'Performance' => [
+                ['label' => 'Matches Played', 'a' => $aStats['matches_played'], 'b' => $bStats['matches_played'], 'unit' => '', 'winner' => $compare($aStats['matches_played'], $bStats['matches_played'])],
+                ['label' => 'Wins', 'a' => $aStats['wins'], 'b' => $bStats['wins'], 'unit' => '', 'winner' => $compare($aStats['wins'], $bStats['wins'])],
+                ['label' => 'Draws', 'a' => $aStats['draws'], 'b' => $bStats['draws'], 'unit' => '', 'winner' => $compare($aStats['draws'], $bStats['draws'])],
+                ['label' => 'Points', 'a' => $aStats['points'], 'b' => $bStats['points'], 'unit' => '', 'winner' => $compare($aStats['points'], $bStats['points'])],
+            ],
+            'Goals' => [
+                ['label' => 'Goals For', 'a' => $aStats['goals_for'], 'b' => $bStats['goals_for'], 'unit' => '', 'winner' => $compare($aStats['goals_for'], $bStats['goals_for'])],
+                ['label' => 'Goals Against', 'a' => $aStats['goals_against'], 'b' => $bStats['goals_against'], 'unit' => '', 'winner' => $compare($aStats['goals_against'], $bStats['goals_against'], false)],
+                ['label' => 'Goal Difference', 'a' => $aStats['goal_difference'], 'b' => $bStats['goal_difference'], 'unit' => '', 'winner' => $compare($aStats['goal_difference'], $bStats['goal_difference'])],
+                ['label' => 'Avg Goals For', 'a' => $aStats['avg_goals_for'], 'b' => $bStats['avg_goals_for'], 'unit' => '', 'winner' => $compare($aStats['avg_goals_for'], $bStats['avg_goals_for'])],
+            ],
+        ];
+
+        $winner = null;
         if ($aWins > $bWins) $winner = 'a';
         elseif ($bWins > $aWins) $winner = 'b';
 

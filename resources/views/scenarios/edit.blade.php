@@ -13,10 +13,20 @@
         <form method="POST" action="{{ route('scenarios.update', $scenario) }}" class="px-8 py-6 space-y-6">
             @csrf @method('PUT')
 
-            <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-data-slate mb-2">Name</label>
-                <input type="text" name="name" value="{{ old('name', $scenario->name) }}" required maxlength="255" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm outline-none focus:border-hoop-orange/50 transition-colors">
-                @error('name') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-data-slate mb-2">Name</label>
+                    <input type="text" name="name" value="{{ old('name', $scenario->name) }}" required maxlength="255" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm outline-none focus:border-hoop-orange/50 transition-colors">
+                    @error('name') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+                <div class="w-32">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-data-slate mb-2">Sport</label>
+                    <select name="sport" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm outline-none focus:border-hoop-orange/50 transition-colors">
+                        <option value="nba" {{ old('sport', $scenario->sport ?? 'nba') === 'nba' ? 'selected' : '' }}>NBA</option>
+                        <option value="champions" {{ old('sport', $scenario->sport) === 'champions' ? 'selected' : '' }}>Champions League</option>
+                    </select>
+                    @error('sport') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
             </div>
 
             <div>

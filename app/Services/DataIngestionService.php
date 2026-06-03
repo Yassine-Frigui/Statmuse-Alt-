@@ -314,7 +314,7 @@ class DataIngestionService
 
     private function insertTeamSeasonCoach(array $record): void
     {
-        $table = DB::table('team_season_coach');
+        $table = DB::table('nba_team_season_coach');
 
         $exists = $table
             ->where('coach_id', $record['coach_id'])
